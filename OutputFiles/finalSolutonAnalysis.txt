@@ -1,0 +1,56 @@
+An isolated lecture at curriculum: q003at time: 15
+An isolated lecture at curriculum: q006at time: 3
+An isolated lecture at curriculum: q011at time: 22
+An isolated lecture at curriculum: q012at time: 10
+An isolated lecture at curriculum: q014at time: 10
+An isolated lecture at curriculum: q015at time: 2
+An isolated lecture at curriculum: q015at time: 22
+An isolated lecture at curriculum: q016at time: 21
+An isolated lecture at curriculum: q017at time: 21
+An isolated lecture at curriculum: q020at time: 6
+An isolated lecture at curriculum: q020at time: 22
+An isolated lecture at curriculum: q025at time: 16
+An isolated lecture at curriculum: q026at time: 7
+An isolated lecture at curriculum: q028at time: 10
+An isolated lecture at curriculum: q034at time: 11
+An isolated lecture at curriculum: q040at time: 3
+An isolated lecture at curriculum: q040at time: 6
+An isolated lecture at curriculum: q040at time: 17
+An isolated lecture at curriculum: q046at time: 2
+An isolated lecture at curriculum: q046at time: 8
+An isolated lecture at curriculum: q047at time: 15
+An isolated lecture at curriculum: q050at time: 19
+An isolated lecture at curriculum: q051at time: 23
+An isolated lecture at curriculum: q052at time: 4
+An isolated lecture at curriculum: q055at time: 4
+An isolated lecture at curriculum: q055at time: 9
+An isolated lecture at curriculum: q055at time: 13
+An isolated lecture at curriculum: q056at time: 4
+An isolated lecture at curriculum: q056at time: 14
+An isolated lecture at curriculum: q060at time: 8
+An isolated lecture at curriculum: q061at time: 13
+An isolated lecture at curriculum: q064at time: 10
+An isolated lecture at curriculum: q066at time: 5
+An isolated lecture at curriculum: q066at time: 10
+An isolated lecture at curriculum: q066at time: 20
+An isolated lecture at curriculum: q067at time: 5
+An isolated lecture at curriculum: q067at time: 12
+An isolated lecture at curriculum: q067at time: 14
+An isolated lecture at curriculum: q067at time: 10
+An isolated lecture at curriculum: q068at time: 12
+An isolated lecture at curriculum: q074at time: 8
+Penalty for isolated lectures constraint 82
+Minimum Working Days Constraint violation: course c0066 spreads over 2 days instead of 3 days
+Minimum Working Days Constraint violation: course c0186 spreads over 2 days instead of 3 days
+Minimum Working Days Constraint violation: course c0279 spreads over 2 days instead of 3 days
+Penalty for minimum working days constraint 15
+Penalty for room capacity constraint 0
+Room Stability Constraint violation: Course c0155 and number of rooms is: 2
+Room Stability Constraint violation: Course c0054 and number of rooms is: 2
+Room Stability Constraint violation: Course c0602 and number of rooms is: 2
+Room Stability Constraint violation: Course c0297 and number of rooms is: 2
+Room Stability Constraint violation: Course c0298 and number of rooms is: 2
+Room Stability Constraint violation: Course c0638 and number of rooms is: 2
+Room Stability Constraint violation: Course c0323 and number of rooms is: 2
+Room Stability Constraint violation: Course c0633 and number of rooms is: 2
+Penalty for room stability constraint 8

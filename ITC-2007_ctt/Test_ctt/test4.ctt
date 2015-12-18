@@ -1,0 +1,436 @@
+Name: Test4
+Courses: 55
+Rooms: 10
+Days: 5
+Periods_per_day: 5
+Curricula: 55
+Constraints: 299
+
+COURSES:
+Mat2C Dante_Alighieri 5 4 110 
+Mat2E Sibilla_Aleramo 5 4 120 
+Mat2G Ludovico_Ariosto 5 4 150 
+Mat2M Ludovico_Ariosto 5 4 120 
+EcoIngC Giovanni_Boccaccio 3 3 110 
+EcoIngEM Dino_Buzzati 3 3 240 
+EcoIngG Italo_Calvino 3 3 150 
+Fis2C Dino_Campana 5 4 100 
+DisArc Giosue'_Carducci 5 4 80 
+GeoAppl Carlo_Cassola 5 4 80 
+Idra Gabriele_D'Annunzio 5 4 80 
+LitGeo Grazia_Deledda 5 4 60 
+MecCom Antonio_Fogazzaro 5 4 60 
+TecEle Ugo_Foscolo 5 4 60 
+Topo Carlo_Emilio_Gadda 5 4 60 
+CosEdi Antonio_Fogazzaro 5 4 30 
+CosSis Carlo_Goldoni 5 4 30 
+ImpTec Giacomo_Leopardi 5 4 30 
+InfIdr Primo_Levi 5 4 30 
+PinTer Alessandro_Manzoni 5 4 30 
+ProStr Eugenio_Montale 5 4 30 
+MetPro Vincenzo_Monti 5 4 100 
+LabEle1 Elsa_Morante 1 1 80 
+TeoSeg Alberto_Moravia 5 3 80 
+ComEle Ippolito_Nievo 5 3 30 
+ProCir Pier_Paolo_Pasolini 4 2 30 
+ProCirL Pier_Paolo_Pasolini 1 1 30 
+Fis2G Luigi_Pirandello 5 4 100 
+EcoIng2G Marco_Polo 5 4 100 
+Elettr1G Leonardo_Sciascia 5 4 80 
+SciCos Matilde_Serao 5 4 80 
+ChiInd Ignazio_Silone 5 4 30 
+EnergG Italo_Svevo 5 4 30 
+ImpChi Giovanni_Verga 5 4 30 
+ModSim Elio_Vittorini 5 4 70 
+SciMatG Claudio_Magris 5 4 30 
+TeoSisG Gianni_Rodari 5 4 30 
+AcuApp Torquato_Tasso 5 4 30 
+MacIIG Cesare_Beccaria 5 4 30 
+MarInd Gioacchino_Belli 5 4 30 
+ProEff Pietro_Bembo 5 4 30 
+SciComG Giordano_Bruno 5 4 30 
+SciPolG Tommaso_Campanella 5 4 30 
+SocInd Giambattista_Vico 5 4 30 
+TecMat Carlo_Cattaneo 5 4 30 
+TecChiM Giovanni_Della_Casa 5 4 100 
+MetalM Guido_Gozzano 5 4 80 
+MecMacM Francesco_Petrarca 5 3 80 
+CosMacM Giovanni_Pascoli 5 4 70 
+ProAss Giovanni_Pascoli 5 4 40 
+TecMec Angelo_Poliziano 5 4 40 
+FonChi Luigi_Pulci 3 3 30 
+MisEle Ruzzante 3 2 20 
+CCIAA2 Emilio_Salgari 2 1 20 
+Inglese William_Shakespeare 2 1 20 
+
+ROOMS:
+rA 312 
+rB 216 
+rD 216 
+rE 216 
+rF 216 
+rL 312 
+r27 105 
+r31 50 
+r37 42 
+r50 100 
+
+CURRICULA:
+Civile1 2 Mat2C EcoIngC 
+LaureaCivile2 2 Fis2C EcoIng2G 
+LaureaCivile3a 2 Idra MecMacM 
+LaureaCivile3b 2 Idra GeoAppl 
+LaureaCivile3c 2 Idra DisArc 
+LaureaCivile4a 2 Topo MecCom 
+LaureaCivile4b 2 Topo TecEle 
+LaureaCivile4c 2 Topo LitGeo 
+LaureaCivile5a 2 ProStr CosSis 
+LaureaCivile5b 2 ProStr ImpTec 
+LaureaCivile5c 2 ProStr PinTer 
+LaureaCivile5d 2 ProStr CosEdi 
+LaureaCivile5e 2 ProStr InfIdr 
+Elettronica1 2 Mat2E EcoIngEM 
+LaureaElettronica2 2 Fis2G MetPro 
+LaureaElettronica3 3 TeoSeg Elettr1G LabEle1 
+LaureaElettronica4a 2 ComEle TeoSisG 
+LaureaElettronica4b 3 ComEle ProCir ProCirL 
+GestionaleB1 2 Mat2G EcoIngG 
+LaureaGestionale2 2 Fis2G EcoIng2G 
+LaureaGestionale3a 3 SciCos Elettr1G LabEle1 
+LaureaGestionale3b 2 SciCos TecChiM 
+LaureaGestionale4a 2 ChiInd ImpChi 
+LaureaGestionale4b 2 ModSim SciMatG 
+LaureaGestionale4c 2 ModSim EnergG 
+LaureaGestionale4d 2 ModSim CosMacM 
+LaureaGestionale4e 2 ModSim TeoSisG 
+LaureaGestionale5a 2 ProEff MarInd 
+LaureaGestionale5b 2 ProEff SocInd 
+LaureaGestionale5c 2 SciComG MarInd 
+LaureaGestionale5d 2 SciComG SocInd 
+LaureaGestionale5e 2 SciPolG MarInd 
+LaureaGestionale5f 2 SciPolG SocInd 
+LaureaGestionale5g 2 MetalM MarInd 
+LaureaGestionale5h 2 MetalM SocInd 
+LaureaGestionale5i 2 AcuApp MarInd 
+LaureaGestionale5j 2 AcuApp SocInd 
+LaureaGestionale5k 2 ImpTec MarInd 
+LaureaGestionale5l 2 ImpTec SocInd 
+LaureaGestionale5m 2 MacIIG MarInd 
+LaureaGestionale5n 2 MacIIG SocInd 
+LaureaGestionale5o 2 TecMat MarInd 
+LaureaGestionale5p 2 TecMat SocInd 
+Meccanica1 2 Mat2M EcoIngEM 
+LaureaMeccanica2 2 Fis2C TecChiM 
+LaureaMeccanica3 2 MetalM MecMacM 
+LaureaMeccanica4a 2 CosMacM SciMatG 
+LaureaMeccanica4b 3 CosMacM Elettr1G LabEle1 
+LaureaMeccanica4c 2 CosMacM EnergG 
+LaureaMeccanica5a 2 TecMec ProAss 
+LaureaMeccanica5c 2 ImpTec MacIIG 
+LaureaMeccanica5d 2 SciComG SciPolG 
+DiplomaAmbiente2 3 FonChi Topo Inglese 
+DiplomaElettronica2 5 Elettr1G TeoSeg Inglese CCIAA2 LabEle1 
+DiplomaElettronica3 3 MisEle ProCir Inglese 
+
+UNAVAILABILITY_CONSTRAINTS:
+DisArc 3 2 
+DisArc 3 3 
+DisArc 3 4 
+DisArc 4 0 
+DisArc 4 1 
+DisArc 4 2 
+DisArc 4 3 
+GeoAppl 0 2 
+GeoAppl 0 3 
+GeoAppl 0 4 
+GeoAppl 1 2 
+GeoAppl 1 3 
+GeoAppl 1 4 
+GeoAppl 2 2 
+GeoAppl 2 3 
+GeoAppl 2 4 
+GeoAppl 3 2 
+GeoAppl 3 3 
+GeoAppl 3 4 
+GeoAppl 4 2 
+GeoAppl 4 3 
+GeoAppl 4 4 
+Idra 0 0 
+Idra 4 0 
+Idra 4 1 
+Idra 4 2 
+Idra 4 3 
+Idra 4 4 
+LitGeo 0 2 
+LitGeo 0 3 
+LitGeo 0 4 
+LitGeo 1 2 
+LitGeo 1 3 
+LitGeo 1 4 
+LitGeo 2 2 
+LitGeo 2 3 
+LitGeo 2 4 
+LitGeo 3 2 
+LitGeo 3 3 
+LitGeo 3 4 
+LitGeo 4 2 
+LitGeo 4 3 
+LitGeo 4 4 
+Topo 0 2 
+Topo 0 3 
+Topo 0 4 
+Topo 1 2 
+Topo 1 3 
+Topo 1 4 
+Topo 2 2 
+Topo 2 3 
+Topo 2 4 
+Topo 3 2 
+Topo 3 3 
+Topo 3 4 
+Topo 4 0 
+Topo 4 1 
+Topo 4 2 
+Topo 4 3 
+Topo 4 4 
+ImpTec 0 3 
+ImpTec 0 4 
+ImpTec 1 3 
+ImpTec 1 4 
+ImpTec 2 3 
+ImpTec 2 4 
+ImpTec 3 3 
+ImpTec 3 4 
+ImpTec 4 2 
+ImpTec 4 3 
+ImpTec 4 4 
+InfIdr 0 0 
+InfIdr 1 0 
+InfIdr 2 0 
+InfIdr 3 0 
+InfIdr 4 0 
+InfIdr 4 2 
+InfIdr 4 3 
+InfIdr 4 4 
+PinTer 0 0 
+PinTer 0 1 
+PinTer 0 2 
+PinTer 2 0 
+PinTer 2 1 
+ProStr 0 0 
+ProStr 0 1 
+ProStr 3 2 
+ProStr 3 3 
+ProStr 3 4 
+ProStr 4 0 
+ProStr 4 1 
+ProStr 4 2 
+ProStr 4 3 
+ProStr 4 4 
+TeoSeg 0 0 
+TeoSeg 1 0 
+TeoSeg 1 1 
+TeoSeg 1 2 
+TeoSeg 1 3 
+TeoSeg 1 4 
+TeoSeg 2 0 
+TeoSeg 2 1 
+TeoSeg 2 2 
+TeoSeg 2 3 
+TeoSeg 2 4 
+TeoSeg 3 0 
+TeoSeg 3 1 
+TeoSeg 4 0 
+ComEle 1 0 
+ComEle 1 1 
+ComEle 1 2 
+ComEle 1 3 
+ComEle 1 4 
+ComEle 2 0 
+ComEle 2 1 
+ComEle 3 0 
+ComEle 3 1 
+ComEle 3 2 
+ComEle 3 3 
+ComEle 3 4 
+ProCir 1 2 
+ProCir 1 3 
+ProCir 1 4 
+ProCir 2 0 
+ProCir 2 1 
+ProCir 2 2 
+ProCir 2 3 
+ProCir 2 4 
+ProCir 3 0 
+ProCir 3 1 
+ProCir 3 2 
+ProCir 3 3 
+ProCir 3 4 
+Elettr1G 0 0 
+Elettr1G 0 1 
+Elettr1G 0 2 
+Elettr1G 0 3 
+Elettr1G 0 4 
+Elettr1G 1 0 
+Elettr1G 1 1 
+Elettr1G 4 1 
+Elettr1G 4 2 
+Elettr1G 4 3 
+Elettr1G 4 4 
+Elettr1G 1 2 
+Elettr1G 1 4 
+SciCos 2 3 
+SciCos 2 4 
+SciCos 4 2 
+SciCos 4 3 
+SciCos 4 4 
+ChiInd 0 0 
+ChiInd 4 0 
+ChiInd 4 1 
+ChiInd 4 2 
+ChiInd 4 3 
+ChiInd 4 4 
+EnergG 0 0 
+EnergG 0 1 
+EnergG 0 2 
+EnergG 0 3 
+EnergG 0 4 
+EnergG 1 3 
+EnergG 1 4 
+EnergG 3 2 
+EnergG 3 3 
+EnergG 3 4 
+EnergG 4 2 
+EnergG 4 3 
+EnergG 4 4 
+ModSim 0 0 
+ModSim 0 1 
+ModSim 0 2 
+ModSim 0 3 
+ModSim 0 4 
+ModSim 1 0 
+ModSim 1 1 
+ModSim 4 2 
+ModSim 4 3 
+ModSim 4 4 
+TeoSisG 0 0 
+AcuApp 0 0 
+AcuApp 1 0 
+AcuApp 2 0 
+AcuApp 3 0 
+AcuApp 4 0 
+MacIIG 0 2 
+MacIIG 0 3 
+MacIIG 0 4 
+MacIIG 1 0 
+MacIIG 1 2 
+MacIIG 2 0 
+MacIIG 2 2 
+MacIIG 3 0 
+MacIIG 3 2 
+MacIIG 4 0 
+MacIIG 4 2 
+MarInd 0 0 
+MarInd 0 3 
+MarInd 0 4 
+MarInd 1 0 
+MarInd 1 3 
+MarInd 1 4 
+MarInd 2 0 
+MarInd 2 3 
+MarInd 2 4 
+MarInd 3 0 
+MarInd 3 3 
+MarInd 3 4 
+MarInd 4 0 
+MarInd 4 1 
+MarInd 4 2 
+MarInd 4 3 
+MarInd 4 4 
+ProEff 0 0 
+ProEff 0 1 
+ProEff 0 2 
+ProEff 0 3 
+ProEff 0 4 
+ProEff 4 1 
+ProEff 4 2 
+SciComG 1 1 
+SciComG 1 2 
+SciComG 1 3 
+SciComG 1 4 
+SciComG 3 1 
+SciComG 3 2 
+SciComG 3 3 
+SciComG 3 4 
+TecMat 0 0 
+TecMat 0 1 
+TecMat 0 2 
+TecMat 0 3 
+TecMat 0 4 
+TecMat 1 0 
+TecMat 1 1 
+TecMat 1 2 
+TecMat 4 3 
+TecMat 4 4 
+MetalM 0 0 
+MetalM 0 1 
+MetalM 0 2 
+MetalM 0 3 
+MetalM 0 4 
+MetalM 1 2 
+MetalM 1 3 
+MetalM 1 4 
+MetalM 2 2 
+MetalM 2 3 
+MetalM 2 4 
+MetalM 3 2 
+MetalM 3 3 
+MetalM 3 4 
+MetalM 4 2 
+MetalM 4 3 
+MetalM 4 4 
+MecMacM 0 0 
+MecMacM 0 1 
+MecMacM 0 2 
+MecMacM 0 3 
+MecMacM 0 4 
+CosMacM 0 2 
+CosMacM 0 3 
+CosMacM 0 4 
+CosMacM 1 2 
+CosMacM 1 3 
+CosMacM 1 4 
+CosMacM 2 2 
+CosMacM 2 3 
+CosMacM 2 4 
+CosMacM 3 2 
+CosMacM 3 3 
+CosMacM 3 4 
+ProAss 2 2 
+ProAss 2 3 
+ProAss 2 4 
+ProAss 3 2 
+ProAss 3 3 
+ProAss 3 4 
+ProAss 4 2 
+ProAss 4 3 
+ProAss 4 4 
+FonChi 0 0 
+FonChi 4 2 
+FonChi 4 3 
+FonChi 4 4 
+MisEle 1 2 
+MisEle 1 3 
+MisEle 1 4 
+MisEle 2 0 
+MisEle 2 1 
+MisEle 2 2 
+MisEle 2 3 
+MisEle 2 4 
+MisEle 3 0 
+MisEle 3 1 
+MisEle 3 2 
+MisEle 3 3 
+MisEle 3 4 
+
+END.
