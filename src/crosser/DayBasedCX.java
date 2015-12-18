@@ -127,8 +127,6 @@ public class DayBasedCX extends crosserBase {
 					currentTime = convertionManager.intToTime(child2.Data[eventParent]);
 					currentRoom = convertionManager.intToRoom(child2.Data[eventParent]);
 					tryCurrentMove(child2, eventParent, time, room, ev2, currentTime, currentRoom);
-					if (ev2!= parameters.UNUSED_EVENT)
-						myCXManager.applyMicroSA(child2, ev2);
 				} // end time for
 			} // end room for
 //		} // en day for
@@ -168,8 +166,6 @@ public class DayBasedCX extends crosserBase {
 					currentTime = convertionManager.intToTime(child1.Data[eventParent]);
 					currentRoom = convertionManager.intToRoom(child1.Data[eventParent]);
 					tryCurrentMove(child1, eventParent, time, room, ev2, currentTime, currentRoom);
-					if (ev2!= parameters.UNUSED_EVENT)
-						myCXManager.applyMicroSA(child2, ev2);
 				} // end time for
 			} // end room for
 //		} // end day for
