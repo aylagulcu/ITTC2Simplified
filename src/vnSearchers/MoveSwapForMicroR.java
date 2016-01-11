@@ -1,0 +1,161 @@
+package vnSearchers;
+
+import java.util.List;
+
+import data.convertionManager;
+import data.dataHolder;
+import data.parameters;
+
+public class MoveSwapForMicroR extends SearcherBase {
+	
+	// Select a random event, Select a position randomly, move it is an empty position! 
+	int ev, time, room, ev2, time2, room2;
+	List<Integer> Times; 
+
+	public MoveSwapForMicroR(SABase mngr) {
+		super(mngr, 0); // remove this index afterwards
+	}
+
+	public boolean search() {		
+		ev= myRandGen.nextInt(parameters.numEvents);
+		
+		time= convertionManager.intToTime(mySA.currentInd.Data[ev]);
+		room= convertionManager.intToRoom(mySA.currentInd.Data[ev]);
+		
+		Times= dataHolder.cTFeasList.get(dataHolder.eventCourseId[ev]);
+		time2 =Times.get(myRandGen.nextInt(Times.size()));
+		room2 =myRandGen.nextInt(parameters.numRooms);
+		ev2= mySA.currentInd.dataMatrix[room2][time2]; // it may be empty== unused event
+	
+		return tryCurrentMove(ev, time2, room2, ev2, time, room); // move related data is recorded if it updates the current best move
+	}
+	
+	
+	public boolean tryCurrentMove(int ev1, int time2, int room2, int ev2, int time1, int room1) { 
+		// ev1 should be evaluated for: time2, room2
+		// ev2 should be evaluated for: time1, room1
+		if (ev1== ev2)
+			return false;	
+		
+		mySA.updateOriginalValue();
+		mySA.computeOriginalPartialValues(ev1, time2, room2, ev2, time1, room1);
+		
+		// update matrix:
+		mySA.currentInd.dataMatrix[room2][time2]= ev1;
+		mySA.currentInd.dataMatrix[room1][time1]= ev2;
+		
+		// update curriculum compactness matrix:
+		if (ev1!= parameters.UNUSED_EVENT){
+			curList= dataHolder.eventCurriculums.get(ev1);
+			for (int cur: curList){
+				if (mySA.currentInd.timeCurriculum[time1][cur]> 0)
+					mySA.currentInd.timeCurriculum[time1][cur]--; // old position
+				mySA.currentInd.timeCurriculum[time2][cur]++; // new position
+			} // end for each
+		}
+		if (ev2!= parameters.UNUSED_EVENT){
+			curList= dataHolder.eventCurriculums.get(ev2);
+			for (int cur: curList){
+				if (mySA.currentInd.timeCurriculum[time2][cur]> 0)
+					mySA.currentInd.timeCurriculum[time2][cur]--; // old position
+				mySA.currentInd.timeCurriculum[time1][cur]++; // new position
+			} // end for each
+		}
+
+		// Now try the current move:
+		if (ev1== parameters.UNUSED_EVENT){
+			ev2OrigVal= mySA.currentInd.Data[ev2];
+			mySA.currentInd.Data[ev2]= convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev2], 1, time1, room1);
+			if (checkFeas(ev2, time1, room1)){
+				mySA.computeNewPartialValues(ev1, time2, room2, ev2, time1, room1);
+				if (mySA.acceptCurrentMove(ev1, time2, room2, ev2, time1, room1)){
+					return true;
+				}
+			} // end if checkFeas
+			// if not returned true:
+			mySA.currentInd.Data[ev2] = ev2OrigVal; // To original values
+			// matrix to original values:
+			mySA.currentInd.dataMatrix[room2][time2]= ev2;
+			mySA.currentInd.dataMatrix[room1][time1]= ev1;
+			
+			
+			// curriculum compactness matrix to original:
+			curList= dataHolder.eventCurriculums.get(ev2);
+			for (int cur: curList){
+				mySA.currentInd.timeCurriculum[time2][cur]++; // original position
+				mySA.currentInd.timeCurriculum[time1][cur]--; // new position
+			} // end for each
+			
+			return false;
+		} // end if
+		
+		if (ev2== parameters.UNUSED_EVENT){
+			ev1OrigVal= mySA.currentInd.Data[ev1];
+			mySA.currentInd.Data[ev1] = convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev1], 1, time2, room2);
+			if (checkFeas(ev1, time2, room2)){
+				mySA.computeNewPartialValues(ev1, time2, room2, ev2, time1, room1);
+				if (mySA.acceptCurrentMove(ev1, time2, room2, ev2, time1, room1)){
+					return true;
+				}
+			} // end if
+			// if not returned true:
+			mySA.currentInd.Data[ev1] = ev1OrigVal; // To original values
+			// matrix to original values:
+			mySA.currentInd.dataMatrix[room2][time2]= ev2;
+			mySA.currentInd.dataMatrix[room1][time1]= ev1;
+			
+			// curriculum compactness matrix to original:
+			curList= dataHolder.eventCurriculums.get(ev1);
+			for (int cur: curList){
+				mySA.currentInd.timeCurriculum[time1][cur]++; // original position
+				mySA.currentInd.timeCurriculum[time2][cur]--; // new position
+			} // end for each
+			
+			return false;
+		} // end if
+		
+		if (ev2!= parameters.UNUSED_EVENT && ev1!= parameters.UNUSED_EVENT){
+			ev2OrigVal= mySA.currentInd.Data[ev2];
+			ev1OrigVal= mySA.currentInd.Data[ev1];
+			mySA.currentInd.Data[ev1] = convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev1], 1, time2, room2);
+			mySA.currentInd.Data[ev2]= convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev2], 1, time1, room1);
+			if (checkFeas(ev1, time2, room2, ev2, time1, room1)){
+				mySA.computeNewPartialValues(ev1, time2, room2, ev2, time1, room1);
+				if (mySA.acceptCurrentMove(ev1, time2, room2, ev2, time1, room1)){
+					return true;
+				} // end if
+			}
+			// if not returned true:
+			mySA.currentInd.Data[ev1] = ev1OrigVal; // To original values
+			mySA.currentInd.Data[ev2] = ev2OrigVal;	// To original values		tryCurrentMoveFeasibility
+			// matrix to original values:
+			mySA.currentInd.dataMatrix[room2][time2]= ev2;
+			mySA.currentInd.dataMatrix[room1][time1]= ev1;
+			
+		
+			// curriculum compactness matrix to original:
+			curList= dataHolder.eventCurriculums.get(ev1);
+			for (int cur: curList){
+				mySA.currentInd.timeCurriculum[time1][cur]++; // original position
+				mySA.currentInd.timeCurriculum[time2][cur]--; // new position
+			} // end for each
+			curList= dataHolder.eventCurriculums.get(ev2);
+			for (int cur: curList){
+				mySA.currentInd.timeCurriculum[time2][cur]++; // original position
+				mySA.currentInd.timeCurriculum[time1][cur]--; // new position
+			} // end for each
+			
+			
+			return false;
+		} // end else if
+
+		return false;
+	} // end method tryCurrentMove
+
+	
+	
+	
+	
+
+}
+	

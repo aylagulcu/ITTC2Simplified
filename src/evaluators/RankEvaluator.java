@@ -13,8 +13,8 @@ public class RankEvaluator {
 		// Assign each individual a rank.
 		// Each individual has a penalty and a robustness value. Compare these values...
 		int dCount; // number of solutions dominating the current solution
-		float p1; float r1;
-		float p2; float r2;
+		double p1; double r1;
+		double p2; double r2;
 		for (int i= 0; i< pop.individuals.length; i++){
 			dCount= 0; // number of solutions dominating i
 			p1= pop.individuals[i].totalPenalty;

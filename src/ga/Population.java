@@ -12,6 +12,8 @@ public class Population {
 	public double avgPValue;
 	
 	public Individual bestRIndividual;
+	public int bestRIndIndex;
+	public int worstRIndex;
 	public Individual worstRIndividual;
 
 	public float[][] indIndDiff; // Clonned data.

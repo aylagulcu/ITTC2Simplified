@@ -29,10 +29,12 @@ public class RobustnessManager {
 		this.robMeasure.evaluateIndividual(ind);
 	}
 	
-	public void evalIndivRobustnessForCurrentOp(Individual ind, int ev1,
-			int time2, int room2, int ev2, int time1, int room1) {
-		this.robMeasure.evaluateIndividualPartial(ind, ev1,
-				time2, room2, ev2, time1, room1);
+	public void evalIndivRobustnessForCurrentOp(Individual ind, int ev1, int time2, int room2, int ev2, int time1, int room1) {
+		this.robMeasure.evaluateIndividualPartial(ind, ev1,	time2, room2, ev2, time1, room1);
+	}
+	
+	public void evalIndivRobustnessForCurrentOpUpdateMatrix(Individual ind, int ev1, int time2, int room2, int ev2, int time1, int room1) {
+		this.robMeasure.evaluateIndividualPartialUpdateMatrix(ind, ev1,	time2, room2, ev2, time1, room1);
 	}
 
 

@@ -38,9 +38,9 @@ public class Individual implements Cloneable{
 	public int[] roomStabP= new int[parameters.numCourses];
 	
 	
-	public float robustValueMin; // = 1/ 1+robustValue
+	public double robustValueMin; // = 1/ 1+robustValue
 	public int[][] rForEventTimeMove= new int[parameters.numEvents][parameters.numTimeSlots];
-	public int[] rEventTotal= new int[parameters.numEvents];
+	public double[] rEventTotal= new double[parameters.numEvents];
 	
 	public int rank; // Individuals with rank=1 form the 1st non-dominated front
 	public float crowdDistance;

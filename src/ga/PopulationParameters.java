@@ -8,7 +8,7 @@ public class PopulationParameters {
 	// initialization tournament size: 20% of all the events is used.
 	// size of 10% to 20% is recommended
 
-	public static int maxIteration= 150;
+	public static int maxIteration= 200;
 	public static int maxIterWithOutImprovement= 100;
 	public static int currentIteration= 0;
 	

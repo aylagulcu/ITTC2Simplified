@@ -3,10 +3,11 @@ package vnSearchers;
 import ga.Individual;
 
 import java.util.ArrayList;
-import java.util.Date;
+//import java.util.Date;
 import java.util.List;
 
 import robustnessEvaluators.RobustnessManager;
+import constraints.ClashConstraint;
 import constraints.ClashSoftConstraint;
 import constraints.ConstraintBase;
 import constraints.CurriculumCompactnessConstraint;
@@ -19,7 +20,7 @@ import data.dataHolder;
 import data.parameters;
 import evaluators.PenaltyEvaluator;
 
-public class MicroSAforP extends VNS {
+public class MicroSAforP extends SABase {
 	Individual bestIndiv= new Individual();
 	
 	public CurriculumCompactnessConstraint curComConstr;
@@ -27,12 +28,9 @@ public class MicroSAforP extends VNS {
 	public ConstraintBase roomCapConstr;
 	public ConstraintBase roomStabConstr;
 	
-	public ClashSoftConstraint clashConstr;
+	public ClashConstraint clashConstr;
 	public InstructorTimeAvailabilityConstraint timeAvailConstr;
 	
-	// Feasibility will always be maintained.
-	VNSearcherBase searcher= new MoveSwapForMicro(this);
-
 	public int origTotalP; // Value of the individual before a VNS move is applied.
 	public int origClashP, origCurCompP, origMinWorkDaysP, origRoomCapP, origRoomStabP;
 	
@@ -54,7 +52,8 @@ public class MicroSAforP extends VNS {
 	
 	double outerLimit= Math.log(Tfinal / Tinit )/ Math.log(coolratio); 
 	// total number of iterations= number of outer * number of inner
-	double totalAllowedIterations= 70821864 * 0.001; // benchmarking result for HP is 216 seconds. 
+//	double totalAllowedIterations= 70821864 * 0.001; // benchmarking result for HP is 216 seconds. 
+	double totalAllowedIterations= 50000;
 	// In 1 seconds, 327879 iterations are performed.
 	// inner iteration count 
 	// steps in the inner loop (loop for each T level)
@@ -63,7 +62,7 @@ public class MicroSAforP extends VNS {
 	public MicroSAforP(List<ConstraintBase> constr) {
 		super(constr);
 		this.constraints= new ArrayList<ConstraintBase>();
-		clashConstr= new ClashSoftConstraint(100);
+		clashConstr= new ClashConstraint(100);
 		timeAvailConstr= new InstructorTimeAvailabilityConstraint(100);
 		curComConstr= new CurriculumCompactnessConstraint();
 		minWorkDaysConstr= new MinimumWorkingDaysConstraint();
@@ -88,33 +87,35 @@ public class MicroSAforP extends VNS {
 				optConstraints.add((ConstraintBase) con);
 		
 		this.pEvaluator= new PenaltyEvaluator(this.constraints);
-		this.rm= new RobustnessManager(this.constraints);
+		this.rm= new RobustnessManager(this.originalConstraints);
+		
+		this.searcher= new MoveSwapForMicroP(this);
 	}
 
-	public void applyVNS(Individual indiv){	
+
+	public void applySA(Individual indiv){	
 		// Attention: VNS searcher should return up to date values of penalty and robustness!!!
 		this.currentInd= indiv; // with the same reference. This reference should not be changed!!!
 
 		int innerCounter= 0;
 		Tcurrent= Tinit;
-		Date startLS = new Date();
+//		Date startLS = new Date();
 		do{
 			innerCounter= 0;
 			while(continueSearch(innerCounter, (int)innerLimit)){
 				this.searcher.search();
 				innerCounter+= 1;
 			} // end while
-//			System.out.println("For the current temperature, "+ Tcurrent+",  inner counter and count accepted are: "+ innerCounter+"  and "+ countAccepted);
 			Tcurrent*= coolratio;
 		}while (Tcurrent >= Tfinal);
 
-		Date endLS= new Date();
-		float diff= (endLS.getTime()- startLS.getTime())/1000; // to get time in seconds
-
+//		Date endLS= new Date();
+//		float diff= (endLS.getTime()- startLS.getTime())/1000; // to get time in seconds
 //		System.out.printf("Before SA Penalty: %d and After SA Penalty: %d \n", origP , this.currentInd.totalPenalty);
-		// Robustness-related values should also be computed!!!
-	}
 
+		// Individual's robustness values should also be up to date!!!
+		this.rm.evalIndivRobustness(currentInd);
+	}
 
 	private boolean continueSearch(int innerCounter, int limit) {
 		if (innerCounter>= limit)
@@ -122,80 +123,10 @@ public class MicroSAforP extends VNS {
 		return true;
 	}
 
-	@Override
-	public boolean acceptCurrentMove() {		
-		this.newTotalP= 0;
-		
-		this.newClashP= this.origClashP;
-		diffCourse= this.eventsOriginalClashP - this.eventsNewClashP;
-		this.newClashP-= diffCourse; // diff will be added up, if it is negative, it will increase newValue; it will decrease o.w.
-		
-		
-		this.newRoomStabP= this.origRoomStabP;
-		diffCourse= this.coursesOriginalRoomStabP - this.coursesNewRoomStabP;
-		this.newRoomStabP-= diffCourse;
-		
-		this.newRoomCapP= this.origRoomCapP;
-		diffCourse= this.eventsOrigRoomCapP - this.eventsNewRoomCapP;
-		this.newRoomCapP-= diffCourse;
-
-		this.newMinWorkDaysP= this.origMinWorkDaysP;
-		diffCourse= this.coursesOrigMinWorkDaysP - this.coursesNewMinWorkDaysP;
-		this.newMinWorkDaysP-= diffCourse;
-
-		this.newCurCompP= this.origCurCompP;
-		diffCourse= this.curriculumsOrigCompP - this.curriculumsNewCompP;
-		this.newCurCompP-= diffCourse;
-
-		this.newTotalP= newClashP + newCurCompP+ newMinWorkDaysP + newRoomCapP + newRoomStabP;
-		
-//		this.pEvaluator.evaluateIndividual(currentInd);
-//		assert this.currentInd.MinWorkDaysP== this.newMinWorkDaysP; // System.out.println("MinWorkDays: "+ this.currentInd.MinWorkDaysP+ "Fast computed:"+ this.newMinWorkDaysP);
-//		assert this.currentInd.RoomCapP== this.newRoomCapP; // System.out.println("Room capacity: "+ this.currentInd.RoomCapP+ "Fast computed:"+ this.newRoomCapP);
-//		assert this.currentInd.RoomStabP== this.newRoomStabP; // System.out.println("Room stability: "+ this.currentInd.RoomStabP+ "Fast computed:"+ this.newRoomStabP);
-//		assert this.currentInd.CurCompP== this.newCurCompP; // System.out.println("CurCompactess: "+ this.currentInd.CurCompP+ "Fast computed:"+ this.newCurCompP);
-//		assert this.currentInd.ClashP== this.newClashP;  
-//		assert currentInd.totalPenalty== this.newTotalP;
-			
-		if (this.newTotalP <= this.origTotalP){ 
-			this.currentInd.totalPenalty= this.newTotalP;
-			
-			this.currentInd.ClashP= this.newClashP;
-			this.currentInd.CurCompP= this.newCurCompP;
-			this.currentInd.MinWorkDaysP= this.newMinWorkDaysP;
-			this.currentInd.RoomCapP= this.newRoomCapP;
-			this.currentInd.RoomStabP= this.newRoomStabP;
-			return true;
-		}
-		else {
-			double acceptProbability= Math.exp(- (this.newTotalP - this.origTotalP)/ Tcurrent);
-			double rnd= this.myRandom.nextDouble(); // [0,1)
-			if (rnd < acceptProbability){
-				this.currentInd.totalPenalty= this.newTotalP;
-				
-				this.currentInd.ClashP= this.newClashP;
-				this.currentInd.CurCompP= this.newCurCompP;
-				this.currentInd.MinWorkDaysP= this.newMinWorkDaysP;
-				this.currentInd.RoomCapP= this.newRoomCapP;
-				this.currentInd.RoomStabP= this.newRoomStabP;
-				return true;
-			}
-			else{
-				this.currentInd.totalPenalty= this.origTotalP;
-				
-				this.currentInd.ClashP= this.origClashP;
-				this.currentInd.CurCompP= this.origCurCompP;
-				this.currentInd.MinWorkDaysP= this.origMinWorkDaysP;
-				this.currentInd.RoomCapP= this.origRoomCapP;
-				this.currentInd.RoomStabP= this.origRoomStabP;
-
-				return false; // With false return, vns searcher takes back the changes!
-			}
-		} // end else
-	}
 	
 	@Override
 	public void updateOriginalValue() {
+		// Penalty:
 		this.origTotalP= this.currentInd.totalPenalty;
 			
 		this.origClashP= this.currentInd.ClashP;		
@@ -245,6 +176,7 @@ public class MicroSAforP extends VNS {
 		if (ev2!= parameters.UNUSED_EVENT){
 			this.eventsOriginalClashP+= this.clashConstr.computeEvent(this.currentInd, ev2, time2, room2);
 		}
+		
 	}
 	
 	@Override
@@ -283,86 +215,83 @@ public class MicroSAforP extends VNS {
 		if (ev2!= parameters.UNUSED_EVENT){
 			this.eventsNewClashP+= this.clashConstr.computeEvent(this.currentInd, ev2, time1, room1);
 		}
+		
 	}
+
 	
-	private double computeTinit(int totalPenalty, int numCourses) {
-		double T;
-		float courseAvgP= (float)totalPenalty / numCourses;
-		double probability= (double) 0.9;
-		T= -courseAvgP / Math.log(probability);
-
-		System.out.println("Initial Temperature: "+ T);
-		return T;
-	}
-
 	@Override
-	public void applyVNS(int iterCounter, Individual indiv) {
-		// TODO Auto-generated method stub
+	public boolean acceptCurrentMove(int ev1, int time2, int room2, int ev2, int time1, int room1) {
+		this.newTotalP= 0;
 		
-	}
-	
-	public void applyVNS(Individual indiv, double avg){	
-		// Attention: VNS searcher should return up to date values of penalty and robustness!!!
-		this.currentInd= indiv; // with the same reference. This reference should not be changed!!!
+		this.newClashP= this.origClashP;
+		diffCourse= this.eventsOriginalClashP - this.eventsNewClashP;
+		this.newClashP-= diffCourse; // diff will be added up, if it is negative, it will increase newValue; it will decrease o.w.
 		
-		boolean result= false;
-
-//		Tinit= 0.25+ (30)* 1 /Math.exp(Math.abs(this.currentInd.totalPenalty-avg)/avg);
-//		System.out.println("t init: "+ Tinit);
 		
-		int innerCounter= 0;
-		Tcurrent= Tinit;
+		this.newRoomStabP= this.origRoomStabP;
+		diffCourse= this.coursesOriginalRoomStabP - this.coursesNewRoomStabP;
+		this.newRoomStabP-= diffCourse;
+		
+		this.newRoomCapP= this.origRoomCapP;
+		diffCourse= this.eventsOrigRoomCapP - this.eventsNewRoomCapP;
+		this.newRoomCapP-= diffCourse;
 
-		int counter= 0;
-		Date startLS = new Date();
-		do{
-			innerCounter= 0;
-			while(continueSearch(innerCounter, (int)innerLimit)){
-				result= this.searcher.search();
-				counter++;
-				if (result){ 
-					
-				}
-				innerCounter+= 1;
-			} // end while
-//			System.out.println("For the current temperature, "+ Tcurrent+",  inner counter and count accepted are: "+ innerCounter+"  and "+ countAccepted);
-			Tcurrent*= coolratio;
-		}while (Tcurrent >= Tfinal);
+		this.newMinWorkDaysP= this.origMinWorkDaysP;
+		diffCourse= this.coursesOrigMinWorkDaysP - this.coursesNewMinWorkDaysP;
+		this.newMinWorkDaysP-= diffCourse;
 
-		// Complete the above total number of iterations (use the iteration budget):
-//		System.out.println("Iterations remaining: "+ (totalAllowedIterations- counter));
-		while (counter< totalAllowedIterations){
-			result= this.searcher.search();
-			counter++;
-		}
+		this.newCurCompP= this.origCurCompP;
+		diffCourse= this.curriculumsOrigCompP - this.curriculumsNewCompP;
+		this.newCurCompP-= diffCourse;
+
+		this.newTotalP= newClashP + newCurCompP+ newMinWorkDaysP + newRoomCapP + newRoomStabP;	
+		
+//		this.pEvaluator.evaluateIndividual(currentInd);
+//		assert this.currentInd.MinWorkDaysP== this.newMinWorkDaysP; // System.out.println("MinWorkDays: "+ this.currentInd.MinWorkDaysP+ "Fast computed:"+ this.newMinWorkDaysP);
+//		assert this.currentInd.RoomCapP== this.newRoomCapP; // System.out.println("Room capacity: "+ this.currentInd.RoomCapP+ "Fast computed:"+ this.newRoomCapP);
+//		assert this.currentInd.RoomStabP== this.newRoomStabP; // System.out.println("Room stability: "+ this.currentInd.RoomStabP+ "Fast computed:"+ this.newRoomStabP);
+//		assert this.currentInd.CurCompP== this.newCurCompP; // System.out.println("CurCompactess: "+ this.currentInd.CurCompP+ "Fast computed:"+ this.newCurCompP);
+//		assert this.currentInd.ClashP== this.newClashP;  
+//		assert currentInd.totalPenalty== this.newTotalP;
 			
-		Date endLS= new Date();
-		float diff= (endLS.getTime()- startLS.getTime())/1000; // to get time in seconds
-//		System.out.println("After SA Current Individual penalty:  "+ this.currentInd.totalPenalty);
-		// Robustness-related values should also be computed!!!
+		if (this.newTotalP <= this.origTotalP){ 
+			this.currentInd.totalPenalty= this.newTotalP;
+			
+			this.currentInd.ClashP= this.newClashP;
+			this.currentInd.CurCompP= this.newCurCompP;
+			this.currentInd.MinWorkDaysP= this.newMinWorkDaysP;
+			this.currentInd.RoomCapP= this.newRoomCapP;
+			this.currentInd.RoomStabP= this.newRoomStabP;
+			
+			return true;
+		}
+		else {
+			double acceptProbability= Math.exp(- (this.newTotalP - this.origTotalP)/ Tcurrent);
+			double rnd= this.myRandom.nextDouble(); // [0,1)
+			if (rnd < acceptProbability){
+				this.currentInd.totalPenalty= this.newTotalP;
+				
+				this.currentInd.ClashP= this.newClashP;
+				this.currentInd.CurCompP= this.newCurCompP;
+				this.currentInd.MinWorkDaysP= this.newMinWorkDaysP;
+				this.currentInd.RoomCapP= this.newRoomCapP;
+				this.currentInd.RoomStabP= this.newRoomStabP;
+				
+				return true;
+			}
+			else{
+				this.currentInd.totalPenalty= this.origTotalP;
+				
+				this.currentInd.ClashP= this.origClashP;
+				this.currentInd.CurCompP= this.origCurCompP;
+				this.currentInd.MinWorkDaysP= this.origMinWorkDaysP;
+				this.currentInd.RoomCapP= this.origRoomCapP;
+				this.currentInd.RoomStabP= this.origRoomStabP;
+
+				return false; // With false return, vns searcher takes back the changes!
+			}
+		} // end else
 	}
 	
-	public void applyVNS(Individual indiv, int event){	
-		// Attention: VNS searcher should return up to date values of penalty and robustness!!!
-		this.currentInd= indiv; // with the same reference. This reference should not be changed!!!
 
-		int innerCounter= 0;
-		Tcurrent= Tinit;
-		Date startLS = new Date();
-		do{
-			innerCounter= 0;
-			while(continueSearch(innerCounter, (int)innerLimit)){
-				this.searcher.search(event);
-				innerCounter+= 1;
-			} // end while
-//			System.out.println("For the current temperature, "+ Tcurrent+",  inner counter and count accepted are: "+ innerCounter+"  and "+ countAccepted);
-			Tcurrent*= coolratio;
-		}while (Tcurrent >= Tfinal);
-
-		Date endLS= new Date();
-		float diff= (endLS.getTime()- startLS.getTime())/1000; // to get time in seconds
-
-//		System.out.printf("Before SA Penalty: %d and After SA Penalty: %d \n", origP , this.currentInd.totalPenalty);
-		// Robustness-related values should also be computed!!!
-	}
 }

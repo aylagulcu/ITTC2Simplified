@@ -19,7 +19,7 @@ import jxl.write.biff.RowsExceededException;
 import mutators.MutationManager;
 import robustnessEvaluators.RobustnessManager;
 import selectors.SelectorBase;
-import vnSearchers.VNSManager;
+import vnSearchers.SAManager;
 import crosser.crossoverManager;
 
 public abstract class GABase {
@@ -29,7 +29,7 @@ public abstract class GABase {
 	protected PenaltyEvaluator penaltyEvaluator;
 	protected SelectorBase selector;
 	protected crossoverManager cxManager;
-	protected VNSManager vnsManager;
+	protected SAManager mySAManager;
 	protected MutationManager mutManager;
 	
 	public RobustnessManager rManager;
@@ -66,7 +66,7 @@ public abstract class GABase {
 	protected void evaluatePopulation(Population pop) {
 		// Each individual in the population is re-evaluated:
 		this.penaltyEvaluator.Evaluate(pop);  // Simple Penalty Evaluator
-//		this.rManager.evalPopRobustness(pop);
+		this.rManager.evalPopRobustness(pop);
 	}
 	
 	protected Population mergePopulations(Population oldPop, Population newPop) {
@@ -182,6 +182,7 @@ public abstract class GABase {
 				bestIndex= i;
 			}
 		} // end i 
+		pop2.bestRIndIndex= bestIndex;
 		return pop2.individuals[bestIndex];
 	}
 	
@@ -192,6 +193,7 @@ public abstract class GABase {
 				worstIndex= i;
 			}
 		} // end i 
+		pop2.worstRIndex= worstIndex;
 		return pop2.individuals[worstIndex];
 	}
 	
@@ -206,7 +208,7 @@ public abstract class GABase {
 		
 		GlobalVars.popRobustnessStats.add(pop2.bestRIndividual.robustValueMin);
 		
-		float[] statsR= new float[pop2.individuals.length];
+		double[] statsR= new double[pop2.individuals.length];
 		for (int i=0; i< pop2.individuals.length; i++)
 			statsR[i]= pop2.individuals[i].robustValueMin;
 		GlobalVars.popRobustnessValues.add(statsR);
@@ -217,16 +219,16 @@ public abstract class GABase {
 	}
 	
 	private void computeSecondRobustnessAndRecord(Population pop2) {
-		float[] statsRSecond= new float[pop2.individuals.length];
-		float originalVal;
-		for (int i=0; i< pop2.individuals.length; i++){
-			originalVal= pop2.individuals[i].robustValueMin;
-			secondRManager.evalIndivRobustness(pop2.individuals[i]);
-			statsRSecond[i]= pop2.individuals[i].robustValueMin;
-			pop2.individuals[i].robustValueMin= originalVal;
-		} // end i for
-
-		GlobalVars.popSecondRobustnessValues.add(statsRSecond);
+//		float[] statsRSecond= new float[pop2.individuals.length];
+//		float originalVal;
+//		for (int i=0; i< pop2.individuals.length; i++){
+//			originalVal= pop2.individuals[i].robustValueMin;
+//			secondRManager.evalIndivRobustness(pop2.individuals[i]);
+//			statsRSecond[i]= pop2.individuals[i].robustValueMin;
+//			pop2.individuals[i].robustValueMin= originalVal;
+//		} // end i for
+//
+//		GlobalVars.popSecondRobustnessValues.add(statsRSecond);
 	}
 	
 	// Start time is sent as parameter; elapsed time is computed and sent back as the return value
@@ -253,7 +255,7 @@ public abstract class GABase {
 			offSprings= this.cxManager.crossIndividuals(selectedIndivs[0], selectedIndivs[1], population.avgPValue);
 	
 			for (Individual child: offSprings){
-				this.mutManager.mutateIndividual(child);
+//				this.mutManager.mutateIndividual(child);
 				newPopulation.individuals[counter]= child;
 				counter++;
 				if (counter>= PopulationParameters.populationSize)
@@ -285,7 +287,9 @@ public abstract class GABase {
 		util.FileOperations.printFinalSolutionToText(this.pop.bestPIndividual); // Best solution for online check
 		util.FileOperations.printFinalSolutionToSheet(this.pop.bestPIndividual); // Best solution for online check
 		
-		util.FileOperations.printVNSInfoToFile(GlobalVars.LSStats);
+		util.FileOperations.printParetoToFile(this.pop);
+		
+		//util.FileOperations.printVNSInfoToFile(GlobalVars.LSStats);
 	}
 	
 

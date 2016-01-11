@@ -2,80 +2,111 @@ package crosser;
 
 import ga.Individual;
 import ga.PopulationParameters;
+import robustnessEvaluators.RobustnessManager;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import util.RandomNumberGenerator;
 import vnSearchers.MicroSAforP;
+import vnSearchers.MicroSAforRobustness;
 import constraints.ConstraintBase;
 import constraints.HardConstraint;
 import evaluators.EvaluatorBase;
 import evaluators.PenaltyEvaluator;
 
 public class crossoverManager {
-	// Individuals should be evaluated after returning from CX operation
-	public EvaluatorBase mySimpleEvaluator;
-	public crosserBase myDayCrosser;
-	public MicroSAforP MicroSA;
+	boolean sap;
+	boolean sar;
+	public Random myRandom;
+	
+	public crosserBase myCrosser;
+	
+	public MicroSAforP MicroSAP;
+	public MicroSAforRobustness MicroSAR;
 	
 	// 2: after only time X, 2: time then room, 2: after only room, 2: after room then time
-	public Individual[] offSprings= new Individual[8]; // after time exchange
-	public Individual[] temp= new Individual[2]; // after time exchange
+	public Individual[] offSprings= new Individual[2]; 
 
 	public List<ConstraintBase> constraints;
 	public List<HardConstraint> feasConstraints;
 	
+	protected RobustnessManager rm;
+	protected EvaluatorBase pEvaluator;
+	
 	double popAvgPenalty;
 	
 	public crossoverManager(List<ConstraintBase> constr) {
+		myRandom= new Random(RandomNumberGenerator.getNewSeed());
+		
 		this.constraints=constr;
 		feasConstraints= new ArrayList<HardConstraint>();
 		for (ConstraintBase con: this.constraints)
 			if (con instanceof HardConstraint)
 				feasConstraints.add((HardConstraint) con);	
 		
-		myDayCrosser=  new DayBasedCX(this); 
-		MicroSA= new MicroSAforP(this.constraints);
-		mySimpleEvaluator= new PenaltyEvaluator(this.constraints);
+		myCrosser=  new TimeBasedCX(this); 
+		MicroSAP= new MicroSAforP(this.constraints);
+		MicroSAR= new MicroSAforRobustness(this.constraints); 
+		
+		this.pEvaluator= new PenaltyEvaluator(this.constraints);
+		this.rm= new RobustnessManager(this.constraints);
+		
 	}
 
-	public synchronized Individual[] crossIndividuals(Individual ind1, Individual ind2, double popAverageP){
+	public Individual[] crossIndividuals(Individual ind1, Individual ind2, double popAverageP){
 
+		sap= true;
+		sar= true;
+		
 		popAvgPenalty= popAverageP;
 		
 		float rnd= RandomNumberGenerator.getRandomFloat(); // [0,1)
 		if (rnd < PopulationParameters.crossoverRate){			
-			temp= myDayCrosser.cross(ind1, ind2);
+			offSprings= myCrosser.cross(ind1, ind2);
 			
 //			this.mySimpleEvaluator.evaluateIndividual(temp[0]);
 //			this.mySimpleEvaluator.evaluateIndividual(temp[1]);
 			
-			return temp;
+			return offSprings;
 		}
 		else{
-			temp[0]= ind1;
-			temp[1]= ind2;
+			offSprings[0]= ind1;
+			offSprings[1]= ind2;
 		}
-		return temp;
+		return offSprings;
 	}
 
-	public void applyMicroSA(Individual child, int eventToMove) {
-		this.MicroSA.applyVNS(child, eventToMove);
-	}
 	
 	public void applyMicroSA(Individual child) {
-		this.MicroSA.applyVNS(child);
 
+		// After CX, evaluation is required:
+		this.pEvaluator.evaluateIndividual(child);
+		this.rm.evalIndivRobustness(child);
+		
+		// if rand < 0.5 then apply penalty improvement
+		if (myRandom.nextDouble()<0.5){	
+			this.MicroSAP.applySA(child);
+			sap= false;
+		}
+		else{
+			this.MicroSAR.applySA(child);
+			sar= false;
+		}
 	}
 	
-//	public void applyMicroSA(Individual child, 	HashSet<Integer> eventsToMove) {
-//		this.mySimpleEvaluator.evaluateIndividual(child);
-////		System.out.println("After CX but before micro SA penalty:\t"+ child.totalPenalty);
-//
-//		for (int event: eventsToMove)
-//			this.MicroSA.applyVNS(child, event);
-//	}
-
+	public void applyMicroSAForSecond(Individual child) {
+		// After CX, evaluation is required:
+		this.pEvaluator.evaluateIndividual(child);
+		this.rm.evalIndivRobustness(child);
+		
+		if (sap){
+			this.MicroSAP.applySA(child);
+		}
+		else{
+			this.MicroSAR.applySA(child);
+		}
+	}
+	
 }

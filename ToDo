@@ -1,9 +1,11 @@
-- Day penalty hesaplarken / o gündeki event sayısı yapmadım!!!
+1- For SA for P and SA for R: Robustness evaluator and P evaluator should be kept in SA Manager with original constraints.
 
+2- For SA micro and normal: Both robustness and penalty values should be kept up to date as in Crossover Base.
 
-2- Decide which individuals to select for VNS: Global best + ???
+3- During SA micro or normal: if equal, accept if it does not worsen the other objective
 
-4- Should we add other moves? Especially for curriculum compactness constraint
+4- Should CX maintain feasibillity??? TRY!
+
 
 http://satt.diegm.uniud.it/ctt/index.php?page=valid
 http://www.umldesigner.org/tutorials/tuto-getting-started.html

@@ -14,7 +14,7 @@ import robustnessEvaluators.RobustnessEvaluatorBase;
 import robustnessEvaluators.RobustnessManager;
 import selectors.RandomSelector;
 import selectors.RouletteWheelSelector;
-import vnSearchers.VNSManager;
+import vnSearchers.SAManager;
 import constraints.ConstraintBase;
 import crosser.crossoverManager;
 import data.parameters;
@@ -33,7 +33,9 @@ public class Deme extends GABase {
 		this.selector= new RandomSelector();
 		
 		this.cxManager = new crossoverManager(this.constraints);
-		this.vnsManager= new VNSManager(constraints);
+	
+		this.mySAManager= new SAManager(constraints);
+		
 		this.mutManager= new MutationManager(this.constraints);
 		this.rManager= new RobustnessManager(this.constraints);
 		this.rankEvaluator= new RankEvaluator();
@@ -71,35 +73,24 @@ public class Deme extends GABase {
 		writeIterationStats(this.pop); // write pop statistics to file
 		System.out.println("Initial bestP: "+ this.pop.bestPIndividual.totalPenalty);
 
-		PopulationParameters.currentIteration=0;
-
+		PopulationParameters.currentIteration=1;
+		
 		while (true){
 			if (!isTerminate()){ 
 				Date dateGenStart = new Date();	
 				this.oldPop= this.pop.Clone();
-
+				
 				this.pop= this.generate(this.pop); // penalty values should already be up to date
 				updatePopulationStats(this.pop); // Population-related computations: Find best; compute rank and crowding distance, and diversity
 
-//				if (PopulationParameters.currentIteration % 10 ==0){
-//					this.vnsManager.applyVNS(PopulationParameters.currentIteration, this.pop); // VNS manager will decide which individuals to apply VNS and which LocalSearch to apply
-//					updatePopulationStats(this.pop); // Population-related computations: Find best; compute rank and crowding distance, and diversity
-//				}
-				
-//				int p= this.pop.individuals[0].totalPenalty;
-//				this.penaltyEvaluator.evaluateIndividual(pop.individuals[0]);
-//				assert p== pop.individuals[0].totalPenalty;
-				
 				// now it is time to merge two populations both of which have the individuals' values up to date
 				this.pop= mergePopulations(this.oldPop, this.pop);
-			
 				updatePopulationStats(this.pop); // Population-related computations: Find best; compute rank and crowding distance, and diversity
+
+				mySAManager.applySA(this.pop);
 				
-//				if (GlobalVars.iterCounterWithNoPenaltyImprovement >= 5){
-//					this.vnsManager.applyVNS(PopulationParameters.currentIteration, this.pop); // VNS manager will decide which individuals to apply VNS and which LocalSearch to apply
-//					updatePopulationStats(this.pop); // Population-related computations: Find best; compute rank and crowding distance, and diversity
-//				} // end if
-				
+				updatePopulationStats(this.pop);
+								
 				writeIterationStats(this.pop); // write the pop statistics to file	
 				Date dateGenEnd = new Date(); 
 				float diff= (dateGenEnd.getTime()- dateGenStart.getTime())/1000; 
@@ -114,7 +105,7 @@ public class Deme extends GABase {
 				System.out.println("Index"+"\t"+"Rank"+"\t"+"CrowdDist"+"\t\t"+"Penalty"+"\t"+"Robustness");
 				for (int i=0; i< this.pop.individuals.length; i++)
 					System.out.println(i+"\t"+this.pop.individuals[i].rank+"\t"+this.pop.individuals[i].crowdDistance+"\t\t"+this.pop.individuals[i].totalPenalty+"\t"+this.pop.individuals[i].robustValueMin);
-
+								
 				System.out.println("Best Penalty Value: "+ this.pop.bestPIndividual.totalPenalty);
 				System.out.println("Best Robustness Value: " + this.pop.bestRIndividual.robustValueMin);
 				FinalSolAnalyzer.Analyze(constraints, this.pop.bestPIndividual);
@@ -134,28 +125,6 @@ public class Deme extends GABase {
 		System.out.println("Total running time is "+ getElapsedTime(start) + " seconds");
 	} // end run	
 
-	private void reInitializePopulation(Population pop) throws IOException {
-		if (GlobalVars.iterCounterWithNoPenaltyImprovement> 10){
-			System.out.println("Reinitializating...");
-			
-			Population newPop= new Population();
-			popInitializer.initialize(newPop); 
-			System.out.println("Initialized");
-			// The following matrices should always be updated!!!
-			for (int i=0; i< this.pop.individuals.length; i++){
-				newPop.individuals[i].createMatrix(); 
-				newPop.individuals[i].createTimeCurMatrix();
-			} // end i for
-
-			evaluatePopulation(newPop); // penalty and robustness values are re-evaluated
-			updatePopulationStats(newPop); // Population-related computations: Find best; compute rank and crowding distance, and diversity
-			System.out.println("Best in newpop: "+ newPop.bestPIndividual.totalPenalty);
-			
-			newPop.individuals[pop.worstPIndex]= bestPindSoFar.clone();
-			pop= newPop;
-		}
-		
-	}
 
 	private void updateBestIndividualSoFar(Population p) {
 
@@ -163,12 +132,16 @@ public class Deme extends GABase {
 			bestPindSoFar= p.bestPIndividual.clone();
 			GlobalVars.iterCounterWithNoPenaltyImprovement= 0;
 		}
-		else{
+		else
 			GlobalVars.iterCounterWithNoPenaltyImprovement+= 1;
-		}
 		
-		if (p.bestRIndividual.robustValueMin < bestRindSoFar.robustValueMin)
+		
+		if (p.bestRIndividual.robustValueMin < bestRindSoFar.robustValueMin){
 			bestRindSoFar= p.bestRIndividual.clone();
+			GlobalVars.iterCounterWithNoRobustnessImprovement= 0;
+		}
+		else
+			GlobalVars.iterCounterWithNoRobustnessImprovement+= 1; 
 		
 	}
 

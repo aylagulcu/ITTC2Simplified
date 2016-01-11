@@ -12,13 +12,15 @@ public class GlobalVars {
 	public static List<Float> popAvgDiversity= new ArrayList<Float>();
 	
 	public static int iterCounterWithNoPenaltyImprovement;
+	public static int iterCounterWithNoRobustnessImprovement;
+	
 	public static boolean improvedPrevious;
 
-	public static List<Float> popRobustnessStats= new ArrayList<Float>(); // Best R
-	public static List<float[]> popRobustnessValues= new ArrayList<float[]>(); // Robustness value of each individual
-	public static List<float[]> popSecondRobustnessValues= new ArrayList<float[]>(); 
+	public static List<Double> popRobustnessStats= new ArrayList<Double>(); // Best R
+	public static List<double[]> popRobustnessValues= new ArrayList<double[]>(); // Robustness value of each individual
+	public static List<double[]> popSecondRobustnessValues= new ArrayList<double[]>(); 
 	
-	public static List<float[]> LSStats;
+	//public static List<float[]> LSStats;
 	
 	public static void initialize(){
 		popPenaltyStats= new ArrayList<int[]>(); // Best P+ Avg P + Worst P
@@ -27,11 +29,12 @@ public class GlobalVars {
 		popAvgDiversity= new ArrayList<Float>();
 		
 		iterCounterWithNoPenaltyImprovement= 0;
+		iterCounterWithNoRobustnessImprovement= 0;
 		improvedPrevious= true;
 
-		popRobustnessStats= new ArrayList<Float>(); // Best R
-		popRobustnessValues= new ArrayList<float[]>(); // Robustness value of each individual
-		popSecondRobustnessValues= new ArrayList<float[]>(); 
+		popRobustnessStats= new ArrayList<Double>(); // Best R
+		popRobustnessValues= new ArrayList<double[]>(); // Robustness value of each individual
+		popSecondRobustnessValues= new ArrayList<double[]>(); 
 
 	}
 }

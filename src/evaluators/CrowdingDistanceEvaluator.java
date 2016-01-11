@@ -6,7 +6,7 @@ import ga.Individual;
 import ga.Population;
 
 public class CrowdingDistanceEvaluator {
-	private float M= 1000;
+	private double M= 1000;
 	
 	// Evaluate for each front seperately!
 	// Ranks should have been evaluated beforehand. Rank values should be up to date!!!
@@ -25,8 +25,8 @@ public class CrowdingDistanceEvaluator {
 		ArrayList<Individual> frontIndivs= new ArrayList<Individual>();
 		int[] sortedIndividuals;
 		int[] sortedPenalties;
-		float[] sortedRobustness;
-		int tempI; int tempP; float tempR;
+		double[] sortedRobustness;
+		int tempI; int tempP; double tempR;
 
 		int RNK= 0;
 		while(RNK<= biggestRNK){	
@@ -76,7 +76,7 @@ public class CrowdingDistanceEvaluator {
 			// Crowding distance is computed using the above sorted arrays:
 			// Individuals in the same order as in above arrays
 			// 0th index refers to the individual with the smallest penalty
-			float range = sortedPenalties[frontIndivs.size()-1] - sortedPenalties[0];
+			double range = sortedPenalties[frontIndivs.size()-1] - sortedPenalties[0];
 			frontIndivs.get(sortedIndividuals[0]).crowdDistance += this.M;	
 			if (frontIndivs.size()> 1){
 				frontIndivs.get(sortedIndividuals[sortedIndividuals.length-1]).crowdDistance += this.M;
@@ -91,7 +91,7 @@ public class CrowdingDistanceEvaluator {
 			for (int i= 0; i< sortedIndividuals.length; i++)
 				sortedIndividuals[i]= i;
 			// Corresponding individual robustness values are kept in below:
-			sortedRobustness= new float[frontIndivs.size()];
+			sortedRobustness= new double[frontIndivs.size()];
 			for (int i= 0; i< sortedRobustness.length; i++)
 				sortedRobustness[i]= frontIndivs.get(i).robustValueMin;
 			

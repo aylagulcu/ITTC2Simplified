@@ -4,14 +4,14 @@ import data.convertionManager;
 import data.dataHolder;
 import data.parameters;
 
-public class SwapNew extends VNSearcherBase{
+public class SwapNew extends SearcherBase{
 	// Select two events of two distinct courses
 	// Perform swap
 
 	int ev1, time1, room1;
 	int ev2, time2, room2;
 	
-	public SwapNew(VNS mngr, int index) {
+	public SwapNew(SABase mngr, int index) {
 		super(mngr, index);
 	}
 
@@ -21,11 +21,11 @@ public class SwapNew extends VNSearcherBase{
 		
 		if (dataHolder.eventCourseId[ev1]== dataHolder.eventCourseId[ev2])
 			return false;
-		time1= convertionManager.intToTime(myVNS.currentInd.Data[ev1]);
-		room1= convertionManager.intToRoom(myVNS.currentInd.Data[ev1]);
+		time1= convertionManager.intToTime(mySA.currentInd.Data[ev1]);
+		room1= convertionManager.intToRoom(mySA.currentInd.Data[ev1]);
 
-		time2= convertionManager.intToTime(myVNS.currentInd.Data[ev2]);
-		room2= convertionManager.intToRoom(myVNS.currentInd.Data[ev2]);
+		time2= convertionManager.intToTime(mySA.currentInd.Data[ev2]);
+		room2= convertionManager.intToRoom(mySA.currentInd.Data[ev2]);
 		
 		return tryCurrentMove(ev1, time2, room2, ev2, time1, room1); // move related data is recorded if it updates the current best move
 	}

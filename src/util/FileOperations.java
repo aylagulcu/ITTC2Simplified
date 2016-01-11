@@ -1,6 +1,7 @@
 package util;
 
 import ga.Individual;
+import ga.Population;
 import ga.PopulationParameters;
 
 import java.io.BufferedReader;
@@ -179,7 +180,7 @@ public class FileOperations {
 	}
 	
 	
-	public static void writePopRobustnessStats(List<Float> numData) throws IOException{
+	public static void writePopRobustnessStats(List<Double> numData) throws IOException{
 		
 		Writer output = null;
 		File file = new File("../ITTC2Simplified/OutputFiles/popRStats.txt");
@@ -189,14 +190,14 @@ public class FileOperations {
 			e.printStackTrace();
 		}
 		
-		for (float i:numData ){
+		for (double i:numData ){
 			output.write(i + "\t");
 			output.write(System.getProperty( "line.separator"));
 		}
 		output.close();
 	}
 	
-	public static void writePopRobustnessValues(List<float[]> popRStats) throws IOException {
+	public static void writePopRobustnessValues(List<double[]> popRStats) throws IOException {
 		Writer output = null;
 		File file = new File("../ITTC2Simplified/OutputFiles/popRobustnessValues.txt");
 		try {
@@ -206,14 +207,14 @@ public class FileOperations {
 		}
 		
 		for(int row=0; row< popRStats.size(); row++){
-			for (float i: popRStats.get(row) )
+			for (double i: popRStats.get(row) )
 				output.write(i + "\t");
 			output.write(System.getProperty( "line.separator"));
 		}
 		output.close();
 	}
 	
-	public static void writePopSecondRobustnessValues(List<float[]> popRStats) throws IOException {
+	public static void writePopSecondRobustnessValues(List<double[]> popRStats) throws IOException {
 		Writer output = null;
 		File file = new File("../ITTC2Simplified/OutputFiles/popSecondRobustnessValues.txt");
 		try {
@@ -223,7 +224,7 @@ public class FileOperations {
 		}
 		
 		for(int row=0; row< popRStats.size(); row++){
-			for (float i: popRStats.get(row) )
+			for (double i: popRStats.get(row) )
 				output.write(i + "\t");
 			output.write(System.getProperty( "line.separator"));
 		}
@@ -586,6 +587,25 @@ public class FileOperations {
 		for(int row=0; row< vnsStats.size(); row++){
 			for (float i: vnsStats.get(row) )
 				output.write(i + "\t");
+			output.write(System.getProperty( "line.separator"));
+		}
+		output.close();
+		
+	}
+
+	
+	
+	public static void printParetoToFile(Population pop) throws IOException {
+		Writer output = null;
+		File file = new File("../ITTC2Simplified/OutputFiles/ParetoFront.txt");
+		try {
+			output=  new BufferedWriter(new FileWriter(file, false )); // true: append mode.
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		for (int i=0; i< pop.individuals.length; i++){
+			output.write(i+"\t"+pop.individuals[i].rank+"\t"+pop.individuals[i].crowdDistance+"\t\t"+pop.individuals[i].totalPenalty+"\t"+pop.individuals[i].robustValueMin);
 			output.write(System.getProperty( "line.separator"));
 		}
 		output.close();

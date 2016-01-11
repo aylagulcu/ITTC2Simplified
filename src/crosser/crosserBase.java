@@ -29,6 +29,7 @@ public abstract class crosserBase{
 	public abstract Individual[] cross(Individual ind1, Individual ind2);
 	
 	// true if current move has been accepted; false o.w.
+	// Similar to SearcherBase method
 	public boolean tryCurrentMove(Individual ind, int ev1, int time2, int room2, int ev2, int time1, int room1) { 
 		// ev1 should be evaluated for: time2, room2
 		// ev2 should be evaluated for: time1, room1
@@ -65,7 +66,7 @@ public abstract class crosserBase{
 			ind.Data[ev2]= convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev2], 1, time1, room1);
 			if (this.checkFeas(ind, ev2, time1, room1)){
 				this.computeNewPartialValues(ind, ev1, time2, room2, ev2, time1, room1);
-				this.acceptCurrentMove(ind);
+				this.acceptCurrentMove(ind, ev1, time2, room2, ev2, time1, room1);
 				return true;
 			} // end if checkFeas
 			// if not returned true:
@@ -88,7 +89,7 @@ public abstract class crosserBase{
 			ind.Data[ev1] = convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev1], 1, time2, room2);
 			if (this.checkFeas(ind, ev1, time2, room2)){
 				this.computeNewPartialValues(ind, ev1, time2, room2, ev2, time1, room1);
-				this.acceptCurrentMove(ind);
+				this.acceptCurrentMove(ind, ev1, time2, room2, ev2, time1, room1);
 				return true;
 			} // end if
 			// if not returned true:
@@ -113,7 +114,7 @@ public abstract class crosserBase{
 			ind.Data[ev2]= convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev2], 1, time1, room1);
 			if (this.checkFeas(ind, ev1, time2, room2, ev2, time1, room1)){
 				this.computeNewPartialValues(ind, ev1, time2, room2, ev2, time1, room1);
-				this.acceptCurrentMove(ind);
+				this.acceptCurrentMove(ind, ev1, time2, room2, ev2, time1, room1);
 				return true;
 			}
 			// if not returned true:
@@ -144,7 +145,7 @@ public abstract class crosserBase{
 
 	public abstract boolean checkFeas(Individual ind, int ev2, int time1, int room1);
 
-	public abstract boolean acceptCurrentMove(Individual ind);
+	public abstract boolean acceptCurrentMove(Individual ind, int ev1, int time2, int room2, int ev2, int time1, int room1);
 
 	public abstract void computeNewPartialValues(Individual ind, int ev1, int time2, int room2, int ev2, int time1, int room1);
 
