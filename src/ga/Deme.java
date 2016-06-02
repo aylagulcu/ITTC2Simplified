@@ -6,14 +6,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 import mutators.MutationManager;
 import robustnessEvaluators.DisruptEventSC;
 import robustnessEvaluators.RobustnessEvaluatorBase;
 import robustnessEvaluators.RobustnessManager;
 import selectors.RandomSelector;
-import selectors.RouletteWheelSelector;
 import vnSearchers.SAManager;
 import constraints.ConstraintBase;
 import crosser.crossoverManager;
@@ -42,6 +39,8 @@ public class Deme extends GABase {
 		this.crowdEvaluator= new CrowdingDistanceEvaluator();
 		this.divManager= new DiversityManager();
 		
+		// second robustness value: Real robustness value
+		// Will only be computed for the initial and the final populations
 		this.secondRManager= new RobustnessManager(this.constraints);
 		RobustnessEvaluatorBase R= new DisruptEventSC(this.secondRManager);
 		this.secondRManager.setRobustnessMeasure(R);
@@ -49,14 +48,15 @@ public class Deme extends GABase {
 
 	Date start;
 	
-	public void run() throws IOException, InterruptedException, RowsExceededException, WriteException  {				
+	public void run() throws IOException  {				
 		GlobalVars.initialize();
-
+		
 		start = new Date();
-//		popInitializer.initialize(this.pop); 
-//		util.FileOperations.writeInitialPopToTxt(this.pop.individuals);
-		util.FileOperations.getInitialSolutionFromTxt(this.pop.individuals);
-//		util.FileOperations.getInitialSolutionFromFinalPopTxt(this.pop.individuals);
+		popInitializer.initialize(this.pop); 
+		
+		util.FileOperations.writeInitialPopToTxt(this.pop.individuals);
+//		util.FileOperations.getInitialSolutionFromTxt(this.pop.individuals );
+//		util.FileOperations.getInitialSolutionFromFinalPopTxt(this.pop.individuals, GlobalVars.runCount);
 		System.out.println("Initialization took "+ getElapsedTime(start) + " seconds");	
 			
 		// The following matrices should always be updated!!!
@@ -65,12 +65,19 @@ public class Deme extends GABase {
 			this.pop.individuals[i].createTimeCurMatrix();
 		} // end i for
 
-		evaluatePopulation(this.pop); // penalty and robustness values are re-evaluated
+		// Each individual in the population is re-evaluated:
+		this.penaltyEvaluator.Evaluate(pop);  // Simple Penalty Evaluator
+		computeInitialPopAvgEventP(pop); // Computed only after initialization (required for real R measure!)
+		
+		this.rManager.evalPopRobustness(pop); // Heuristic robustness measure, changes the real value to the heuristic measure
+	
 		updatePopulationStats(this.pop); // Population-related computations: Find best; compute rank and crowding distance, and diversity
 		bestPindSoFar= this.pop.bestPIndividual.clone();
 		bestRindSoFar= this.pop.bestRIndividual.clone();
 		
 		writeIterationStats(this.pop); // write pop statistics to file
+		computeSecondRobustnessAndRecord(this.pop);
+		
 		System.out.println("Initial bestP: "+ this.pop.bestPIndividual.totalPenalty);
 
 		PopulationParameters.currentIteration=1;
@@ -81,14 +88,14 @@ public class Deme extends GABase {
 				this.oldPop= this.pop.Clone();
 				
 				this.pop= this.generate(this.pop); // penalty values should already be up to date
-				updatePopulationStats(this.pop); // Population-related computations: Find best; compute rank and crowding distance, and diversity
-
-				// now it is time to merge two populations both of which have the individuals' values up to date
-				this.pop= mergePopulations(this.oldPop, this.pop);
-				updatePopulationStats(this.pop); // Population-related computations: Find best; compute rank and crowding distance, and diversity
-
-				mySAManager.applySA(this.pop);
 				
+				// merge two populations both of which have the individuals' values up to date
+				this.pop= mergePopulations(this.oldPop, this.pop);
+	
+				updatePopulationStats(this.pop);
+				this.pop= mergePopulations(this.pop, mySAManager.applySA(this.pop));
+
+				// Find best P; find bestR:
 				updatePopulationStats(this.pop);
 								
 				writeIterationStats(this.pop); // write the pop statistics to file	
@@ -97,9 +104,15 @@ public class Deme extends GABase {
 				System.out.println("Iteration "+ PopulationParameters.currentIteration+ " took "+ diff + 
 						" seconds. Best P Value: "+ this.pop.bestPIndividual.totalPenalty+ "\t"+ "Average penalty: "+ this.pop.avgPValue);
 
+				GlobalVars.runDetails.add("Iteration "+ PopulationParameters.currentIteration+ " took "+ diff + 
+						" seconds. Best P Value: "+ this.pop.bestPIndividual.totalPenalty+ "\t"+ "Average penalty: "+ 
+						this.pop.avgPValue);
+
 				updateBestIndividualSoFar(this.pop);
 			} // end if isTerminate
 			else{ // Termination criteria occurs		
+				computeSecondRobustnessAndRecord(this.pop);
+				
 				System.out.println();
 				System.out.println("********************************************");
 				System.out.println("Index"+"\t"+"Rank"+"\t"+"CrowdDist"+"\t\t"+"Penalty"+"\t"+"Robustness");
@@ -117,6 +130,15 @@ public class Deme extends GABase {
 					System.out.println(c.getClass().getSimpleName()+" violation: "+ c.Compute(this.pop.bestPIndividual));
 				System.out.println("Best Individual So Far penalty: "+ bestPindSoFar.totalPenalty);
 
+				System.out.println();
+				System.out.println("********************************************");
+				System.out.println("Constraint violations of the best R individual:");
+				for (ConstraintBase c: this.constraints)
+					System.out.println(c.getClass().getSimpleName()+" violation: "+ c.Compute(this.pop.bestRIndividual));
+				System.out.println("Best Individual So Far robustness: "+ bestRindSoFar.totalPenalty);
+
+
+				
 				break;
 			} // end else
 			PopulationParameters.currentIteration++;	
@@ -124,6 +146,19 @@ public class Deme extends GABase {
 
 		System.out.println("Total running time is "+ getElapsedTime(start) + " seconds");
 	} // end run	
+
+
+
+	private void computeInitialPopAvgEventP(Population pop) {
+		double totalP= 0;
+		
+		for (int i=0; i< pop.individuals.length; i++){
+			totalP+= pop.individuals[i].totalPenalty;
+		} // end i
+		GlobalVars.initialPopAvgEventP= totalP / (pop.individuals.length * parameters.numEvents);
+		System.out.println("Initial population avg eventP: "+ GlobalVars.initialPopAvgEventP);
+	}
+
 
 
 	private void updateBestIndividualSoFar(Population p) {

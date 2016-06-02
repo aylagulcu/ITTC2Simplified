@@ -36,7 +36,7 @@ public class MicroSAforRobustness extends SABase {
 	double outerLimit= Math.log(Tfinal / Tinit )/ Math.log(coolratio); 
 	// total number of iterations= number of outer * number of inner
 //	double totalAllowedIterations= 70821864 * 0.00001; // benchmarking result for HP is 216 seconds. 
-	double totalAllowedIterations= 500;
+	double totalAllowedIterations= 100;
 	// In 1 seconds, 327879 iterations are performed.
 	// inner iteration count 
 	// steps in the inner loop (loop for each T level)
@@ -56,7 +56,7 @@ public class MicroSAforRobustness extends SABase {
 		this.searcher= new MoveSwapForMicroR(this);
 	}
 
-	public void applySA(Individual indiv){	
+	public void applySAMicro(Individual indiv){	
 		this.rm.evalIndivRobustness(indiv);
 		
 		// Attention: VNS searcher should return up to date values of penalty and robustness!!!
@@ -80,7 +80,7 @@ public class MicroSAforRobustness extends SABase {
 	
 		// Individual's penalty values should also be up to date!!!
 		this.pEvaluator.evaluateIndividual(currentInd);
-		System.out.println("HC Robustness Current individual feasibility: "+ currentInd.isFeasible);
+//		System.out.println("HC Robustness Current individual feasibility: "+ currentInd.isFeasible);
 	}
 
 

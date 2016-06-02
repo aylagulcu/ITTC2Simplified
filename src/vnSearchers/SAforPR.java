@@ -1,12 +1,13 @@
 package vnSearchers;
 
 import ga.Individual;
+
 import java.util.ArrayList;
 //import java.util.Date;
 import java.util.List;
 
 import robustnessEvaluators.RobustnessManager;
-import constraints.ClashSoftConstraint;
+import constraints.ClashConstraint;
 import constraints.ConstraintBase;
 import constraints.CurriculumCompactnessConstraint;
 import constraints.HardConstraint;
@@ -18,13 +19,18 @@ import data.dataHolder;
 import data.parameters;
 import evaluators.PenaltyEvaluator;
 
-public class SAforP extends SABase {
+public class SAforPR extends SABase {
+	// Clash is HC
+	public double origTotalRobustness;
+	public double newTotalRobustness;
+	
+	
 	public CurriculumCompactnessConstraint curComConstr;
 	public ConstraintBase minWorkDaysConstr;
 	public ConstraintBase roomCapConstr;
 	public ConstraintBase roomStabConstr;
 	
-	public ClashSoftConstraint clashConstr;
+	public ClashConstraint clashConstr;
 	public InstructorTimeAvailabilityConstraint timeAvailConstr;
 	
 	// Feasibility will always be maintained.
@@ -42,7 +48,7 @@ public class SAforP extends SABase {
 	public int curriculumsOrigCompP, curriculumsNewCompP; // All the curriculums for the given two courses are affected
 	public int eventsOriginalClashP, eventsNewClashP;
 	
-	double Tinit= 15.25; //.125;
+	double Tinit= 15.25;
 	double Tcurrent;
 	double Tfinal= 0.1567;
 	double coolratio= 0.99;
@@ -50,7 +56,9 @@ public class SAforP extends SABase {
 	
 	double outerLimit= Math.log(Tfinal / Tinit )/ Math.log(coolratio); 
 	// total number of iterations= number of outer * number of inner
-	double totalAllowedIterations= 10000000;
+//	double totalAllowedIterations= 1000000; // benchmarking result for HP is 216 seconds. 
+	double totalAllowedIterations= 100; // benchmarking result for HP is 216 seconds. 
+	
 	// In 1 seconds, 327879 iterations are performed.
 	// inner iteration count 
 	// steps in the inner loop (loop for each T level)
@@ -60,10 +68,10 @@ public class SAforP extends SABase {
 	
 	Individual bestIndiv= new Individual();
 	
-	public SAforP(List<ConstraintBase> constr) {
+	public SAforPR(List<ConstraintBase> constr) {
 		super(constr);
 		this.constraints= new ArrayList<ConstraintBase>();
-		clashConstr= new ClashSoftConstraint(100);
+		clashConstr= new ClashConstraint(100);
 		timeAvailConstr= new InstructorTimeAvailabilityConstraint(100);
 		curComConstr= new CurriculumCompactnessConstraint();
 		minWorkDaysConstr= new MinimumWorkingDaysConstraint();
@@ -93,16 +101,30 @@ public class SAforP extends SABase {
 		VNSList.add(new MoveNew(this, 0)); // put Move in the first order!
 		VNSList.add(new SwapNew(this, 1));
 		VNSList.add(new MoveSwapNew(this, 2));		
+
 	}
 
 	public Individual applySA(Individual indiv){	
+//		if (!indiv.isFeasible)
+//			return;
+//		System.out.println("Outer loop count: +" +outerLimit+ " Inner loop count: "+ innerLimit);
+		
+//		System.out.println("Before SAPR, Current penalty: " + indiv.totalPenalty);
+		
 		// Attention: VNS searcher should return up to date values of penalty and robustness!!!
-		this.currentInd= indiv.clone();
+		this.currentInd= indiv.clone(); // with the same reference. This reference should not be changed!!!
 		copyCurrentToBest(); // copy the fields of to current individual to the best individual
+
+		penaltyAtEachTemperature.clear();
 	
 		boolean result= false;
-		int innerCounter= 0; int countAccepted= 0; Tcurrent= Tinit; int counter= 0;
 
+		int innerCounter= 0;
+		int countAccepted= 0;
+		Tcurrent= Tinit;
+		penaltyAtEachTemperature.add(this.currentInd.totalPenalty);
+		int counter= 0;
+//		Date startLS = new Date();
 		do{
 			innerCounter= 0; countAccepted= 0;
 			while(continueSearch(innerCounter, (int)innerLimit, countAccepted)){
@@ -115,6 +137,8 @@ public class SAforP extends SABase {
 				}
 				innerCounter+= 1;
 			} // end while
+			penaltyAtEachTemperature.add(this.currentInd.totalPenalty);
+//			System.out.println("For the current temperature, "+ Tcurrent+",  inner counter and count accepted are: "+ innerCounter+"  and "+ countAccepted);
 			Tcurrent*= coolratio;
 		}while (Tcurrent >= Tfinal);
 
@@ -123,20 +147,34 @@ public class SAforP extends SABase {
 		while (counter< totalAllowedIterations){
 			this.searcher= selectSearcher();
 			result= this.searcher.search();
-			if (result) // ?? why does this result worsen the performance???
-				updateBestIndiv();
+//			if (result) // ?? why does this result worse performance???
+//				updateBestIndiv();
 			counter++;
 		}
 			
-//		System.out.println("SA Best Individual penalty:  "+ this.bestIndiv.totalPenalty);
+//		Date endLS= new Date();
+//		float diff= (endLS.getTime()- startLS.getTime())/1000; // to get time in seconds
+//		System.out.println(counter+ "iterations in SA took "+ diff + " seconds.");
+//		try {
+//			FileOperations.writeToFile(penaltyAtEachTemperature);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+	
+		updateBestIndiv();
 		
+//		System.out.println("SA Best Individual penalty:  "+ this.bestIndiv.totalPenalty);
 		if (this.bestIndiv.totalPenalty < this.currentInd.totalPenalty){
 			bestIndiv.createMatrix();
 			bestIndiv.createTimeCurMatrix();
 			this.bestIndiv.clone(this.currentInd); // Copy the fields of best to the current
 		} // end if
-
+//		System.out.println("After SA Current Individual penalty:  "+ this.currentInd.totalPenalty);
+		assert this.currentInd.totalPenalty <= bestIndiv.totalPenalty;
+		
 		this.rm.evalIndivRobustness(currentInd);
+		
 		return this.currentInd;
 	}
 
@@ -187,6 +225,8 @@ public class SAforP extends SABase {
 	
 	@Override
 	public void updateOriginalValue() {
+		this.origTotalRobustness= this.currentInd.robustValueMin;
+		
 		this.origTotalP= this.currentInd.totalPenalty;
 		
 		this.origClashP= this.currentInd.ClashP;		
@@ -199,6 +239,10 @@ public class SAforP extends SABase {
 	
 	@Override
 	public void computeOriginalPartialValues(int ev1, int time2, int room2, int ev2, int time1, int room1){
+		
+		// no partial computation is available for robustness
+		
+		
 		// Compute the original course values of ev1 and ev2 of the currentInd.
 
 		this.coursesOriginalRoomStabP= 0;
@@ -241,6 +285,14 @@ public class SAforP extends SABase {
 	
 	@Override
 	public void computeNewPartialValues(int ev1, int time2, int room2, int ev2, int time1, int room1){
+		// R:
+		// Important: The following operation does not change the individual's robustness arrays.
+		// It modifies only a single field: robustValueMin		
+		this.rm.evalIndivRobustnessForCurrentOp(currentInd, ev1, time2, room2, ev2, time1, room1);
+		this.newTotalRobustness= this.currentInd.robustValueMin;
+		
+		
+		// P:
 		this.coursesNewRoomStabP= 0;
 		this.eventsNewRoomCapP= 0;
 		this.coursesNewMinWorkDaysP= 0;
@@ -275,12 +327,13 @@ public class SAforP extends SABase {
 		if (ev2!= parameters.UNUSED_EVENT){
 			this.eventsNewClashP+= this.clashConstr.computeEvent(this.currentInd, ev2, time1, room1);
 		}
-
 	}
 
 	
+	
 	@Override
 	public boolean acceptCurrentMove(int ev1, int time2, int room2, int ev2, int time1, int room1) {
+				
 		this.newTotalP= 0;
 		
 		this.newClashP= this.origClashP;
@@ -304,8 +357,20 @@ public class SAforP extends SABase {
 		this.newCurCompP-= diffCourse;
 
 		this.newTotalP= newClashP + newCurCompP+ newMinWorkDaysP + newRoomCapP + newRoomStabP;
+		
+//		this.pEvaluator.evaluateIndividual(currentInd);
+//		assert this.currentInd.MinWorkDaysP== this.newMinWorkDaysP; // System.out.println("MinWorkDays: "+ this.currentInd.MinWorkDaysP+ "Fast computed:"+ this.newMinWorkDaysP);
+//		assert this.currentInd.RoomCapP== this.newRoomCapP; // System.out.println("Room capacity: "+ this.currentInd.RoomCapP+ "Fast computed:"+ this.newRoomCapP);
+//		assert this.currentInd.RoomStabP== this.newRoomStabP; // System.out.println("Room stability: "+ this.currentInd.RoomStabP+ "Fast computed:"+ this.newRoomStabP);
+//		assert this.currentInd.CurCompP== this.newCurCompP; // System.out.println("CurCompactess: "+ this.currentInd.CurCompP+ "Fast computed:"+ this.newCurCompP);
+//		assert this.currentInd.ClashP== this.newClashP;
+//		assert currentInd.totalPenalty== this.newTotalP;
 			
-		if (this.newTotalP <= this.origTotalP){ 
+		if (this.newTotalP <= this.origTotalP && this.newTotalRobustness <= this.origTotalRobustness){ 
+			// R:
+			this.rm.evalIndivRobustnessForCurrentOpUpdateMatrix(currentInd, ev1, time2, room2, ev2, time1, room1);			
+	
+			// P:
 			this.currentInd.totalPenalty= this.newTotalP;
 			
 			this.currentInd.ClashP= this.newClashP;
@@ -317,9 +382,15 @@ public class SAforP extends SABase {
 			return true;
 		}
 		else {
-			double acceptProbability= Math.exp(- (this.newTotalP - this.origTotalP)/ Tcurrent);
+			double acceptProbabilityP= Math.exp(- (this.newTotalP - this.origTotalP)/ Tcurrent);
+			double acceptProbabilityR= Math.exp(- (this.newTotalRobustness - this.origTotalRobustness)/ Tcurrent);
+			
 			double rnd= this.myRandom.nextDouble(); // [0,1)
-			if (rnd < acceptProbability){
+			if (rnd < Math.min(acceptProbabilityP, acceptProbabilityR)){
+				// R:
+				this.rm.evalIndivRobustnessForCurrentOpUpdateMatrix(currentInd, ev1, time2, room2, ev2, time1, room1);
+				
+				// P:
 				this.currentInd.totalPenalty= this.newTotalP;
 				
 				this.currentInd.ClashP= this.newClashP;
@@ -327,10 +398,13 @@ public class SAforP extends SABase {
 				this.currentInd.MinWorkDaysP= this.newMinWorkDaysP;
 				this.currentInd.RoomCapP= this.newRoomCapP;
 				this.currentInd.RoomStabP= this.newRoomStabP;
-				
 				return true;
 			}
 			else{
+				// R:
+				this.currentInd.robustValueMin= this.origTotalRobustness;	
+				
+				// P:
 				this.currentInd.totalPenalty= this.origTotalP;
 				
 				this.currentInd.ClashP= this.origClashP;
@@ -342,8 +416,6 @@ public class SAforP extends SABase {
 				return false; // With false return, vns searcher takes back the changes!
 			}
 		} // end else
-		
-
 	}
 	
 }

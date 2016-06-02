@@ -16,6 +16,6 @@ public abstract class SelectorBase {
 	
 	public abstract Individual[] selectIndividual(Population population);
 	
-//	public abstract int[] selectIndividualIndices(Population population);
+	public abstract int[] selectIndividualIndices(Population population);
 }
 

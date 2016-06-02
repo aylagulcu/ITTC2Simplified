@@ -17,6 +17,8 @@ import data.convertionManager;
 import data.dataHolder;
 import data.parameters;
 import ga.Individual;
+import ga.PopulationParameters;
+import util.RandomNumberGenerator;
 
 @SuppressWarnings("unused")
 public class TimeBasedCX extends crosserBase {
@@ -82,6 +84,8 @@ public class TimeBasedCX extends crosserBase {
 		
 		// Now copy from ind1 to child 2:
 		int time= myRandom.nextInt(parameters.numTimeSlots);
+//		int time= selectTimeSlotRW(ind1);
+		
 		for (int room = 0; room < parameters.numRooms; room++) {
 			eventParent = ind1.dataMatrix[room][time];
 			if (eventParent == parameters.UNUSED_EVENT)
@@ -93,11 +97,11 @@ public class TimeBasedCX extends crosserBase {
 			currentRoom = convertionManager.intToRoom(child2.Data[eventParent]);
 			tryCurrentMove(child2, eventParent, time, room, ev2, currentTime, currentRoom);
 		} // end room for
-		myCXManager.applyMicroSA(child2);
 
 		// Now individual 2 to child 1:
 		// Now copy from ind2 to child 1:
 		time= myRandom.nextInt(parameters.numTimeSlots);
+//		time= selectTimeSlotRW(ind2);
 		for (int room = 0; room < parameters.numRooms; room++) {
 			eventParent = ind2.dataMatrix[room][time];
 			if (eventParent == parameters.UNUSED_EVENT)
@@ -110,11 +114,77 @@ public class TimeBasedCX extends crosserBase {
 			tryCurrentMove(child1, eventParent, time, room, ev2, currentTime, currentRoom);
 		} // end room for
 		
-		myCXManager.applyMicroSAForSecond(child1);
-		
 		myOffSprings[0]= child1;
 		myOffSprings[1]= child2;
 		return myOffSprings;
+	}
+
+	private int selectTimeSlotRW(Individual indiv) {
+		int[] timePenalties= new int[parameters.numTimeSlots]; 
+		int event= parameters.UNUSED_EVENT;
+		
+		for (int time=0; time< timePenalties.length; time++){
+			timePenalties[time]= 0;
+			for (int room=0; room< parameters.numRooms; room++){
+				event= indiv.dataMatrix[room][time];
+				if (event== parameters.UNUSED_EVENT) continue;
+				for (ConstraintBase constr: myCXManager.constraints){
+					timePenalties[time]+= constr.computeEvent(indiv, event, time, room);
+				} // end constr for each
+			} // end room for
+		} // end time for
+		
+		// now return time acc to RW: the less penalty the higher the selection probability
+		//	Assign each individual a fitness value as: fitness i= sum penalty /penalty i
+		//	Then, sort the individuals acc. to the fitness values
+		int totalPenalty= 0; 
+		for(int i=0; i< timePenalties.length; i++)
+			totalPenalty= totalPenalty +  timePenalties[i];
+		
+		double totalFitness= 0;
+		double[] fitnessValues= new double[timePenalties.length];
+		
+		for(int i=0; i< timePenalties.length; i++)
+			fitnessValues[i]= (totalPenalty /  timePenalties[i]);
+		
+		// The lower the penalty, the higher the fitness; the higher the fitness, the better the individual
+		for(int i=0; i< timePenalties.length; i++)
+			totalFitness+= fitnessValues[i];
+		
+		int[] timeSlotsSorted= new int[timePenalties.length];
+		
+		// now sort individuals acc to fitness values:
+		for (int i=0; i< timeSlotsSorted.length; i++)
+			timeSlotsSorted[i]= i;
+		int temp;
+		for (int i=0; i< timeSlotsSorted.length; i++)
+			for (int j=i+1; j< timeSlotsSorted.length; j++){
+				if (fitnessValues[timeSlotsSorted[j]]> fitnessValues[timeSlotsSorted[i]]){
+					temp= timeSlotsSorted[i];
+					timeSlotsSorted[i]= timeSlotsSorted[j];
+					timeSlotsSorted[j]= temp;
+				} // end if
+			} // end j for
+		
+		
+		// now apply RW:
+		double randomFitness; 
+		double partialTotal;
+		
+		for (int count=0; count< timeSlotsSorted.length; count++){
+			randomFitness= (RandomNumberGenerator.getRandomDouble()* totalFitness);
+			partialTotal=0;
+			for(int i=0; i< timeSlotsSorted.length; i++){
+				partialTotal+= fitnessValues[timeSlotsSorted[i]];
+				if (partialTotal >= randomFitness){
+					// found the individual:
+					return timeSlotsSorted[i];
+				}
+			} // end i for
+		} // end count for
+		
+		
+		return 0;
 	}
 
 	@Override

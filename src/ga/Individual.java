@@ -31,7 +31,7 @@ public class Individual implements Cloneable{
 	public int RoomCapP;
 	public int RoomStabP;
 	
-	// The followings will be filled out for the constraints
+//	// The followings will be filled out for the constraints
 	public int[] curCompP= new int[parameters.numCourses];
 	public int[] minWorkDaysP= new int[parameters.numCourses];
 	public int[] roomCapP= new int[parameters.numCourses];

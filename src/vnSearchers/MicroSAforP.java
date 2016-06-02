@@ -8,7 +8,6 @@ import java.util.List;
 
 import robustnessEvaluators.RobustnessManager;
 import constraints.ClashConstraint;
-import constraints.ClashSoftConstraint;
 import constraints.ConstraintBase;
 import constraints.CurriculumCompactnessConstraint;
 import constraints.HardConstraint;
@@ -53,7 +52,7 @@ public class MicroSAforP extends SABase {
 	double outerLimit= Math.log(Tfinal / Tinit )/ Math.log(coolratio); 
 	// total number of iterations= number of outer * number of inner
 //	double totalAllowedIterations= 70821864 * 0.001; // benchmarking result for HP is 216 seconds. 
-	double totalAllowedIterations= 50000;
+	double totalAllowedIterations= 1000;
 	// In 1 seconds, 327879 iterations are performed.
 	// inner iteration count 
 	// steps in the inner loop (loop for each T level)
@@ -93,7 +92,7 @@ public class MicroSAforP extends SABase {
 	}
 
 
-	public void applySA(Individual indiv){	
+	public void applySAMicro(Individual indiv){	
 		// Attention: VNS searcher should return up to date values of penalty and robustness!!!
 		this.currentInd= indiv; // with the same reference. This reference should not be changed!!!
 

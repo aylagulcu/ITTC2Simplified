@@ -2,24 +2,15 @@ package vnSearchers;
 
 import ga.Individual;
 
-import java.io.IOException;
 import java.util.ArrayList;
 //import java.util.Date;
 import java.util.List;
 
 import robustnessEvaluators.RobustnessManager;
-import util.FileOperations;
 import constraints.ClashConstraint;
-import constraints.ClashSoftConstraint;
 import constraints.ConstraintBase;
-import constraints.CurriculumCompactnessConstraint;
 import constraints.HardConstraint;
 import constraints.InstructorTimeAvailabilityConstraint;
-import constraints.MinimumWorkingDaysConstraint;
-import constraints.RoomCapacityConstraint;
-import constraints.RoomStabilityConstraint;
-import data.dataHolder;
-import data.parameters;
 import evaluators.PenaltyEvaluator;
 
 public class SAforRobustness extends SABase {
@@ -36,7 +27,7 @@ public class SAforRobustness extends SABase {
 	
 	double outerLimit= Math.log(Tfinal / Tinit )/ Math.log(coolratio); 
 	// total number of iterations= number of outer * number of inner
-	double totalAllowedIterations= 70821864 * 0.0002; // benchmarking result for HP is 216 seconds. 
+	double totalAllowedIterations= 1000; // benchmarking result for HP is 216 seconds. 
 	// In 1 seconds, 327879 iterations are performed.
 	// inner iteration count 
 	// steps in the inner loop (loop for each T level)
@@ -57,17 +48,17 @@ public class SAforRobustness extends SABase {
 		VNSList.clear();
 		VNSList.add(new MoveNew(this, 0)); // put Move in the first order!
 		VNSList.add(new SwapNew(this, 1));
-		
+		VNSList.add(new MoveSwapNew(this, 2));		
 	}
 
-	public void applySA(Individual indiv){	
+	public Individual applySA(Individual indiv){	
 //		if (!indiv.isFeasible)
 //			return;
 //		System.out.println("Outer loop count: +" +outerLimit+ " Inner loop count: "+ innerLimit);
-//		System.out.println("Before SA, Current penalty: " + indiv.totalPenalty);
+//		System.out.println("Before SAR,  Current penalty: " + indiv.totalPenalty);
 		
 		// Attention: VNS searcher should return up to date values of penalty and robustness!!!
-		this.currentInd= indiv; // with the same reference. This reference should not be changed!!!
+		this.currentInd= indiv.clone(); // with the same reference. This reference should not be changed!!!
 		copyCurrentToBest(); // copy the fields of to current individual to the best individual
 
 		penaltyAtEachTemperature.clear();
@@ -108,24 +99,26 @@ public class SAforRobustness extends SABase {
 //		Date endLS= new Date();
 //		float diff= (endLS.getTime()- startLS.getTime())/1000; // to get time in seconds
 //		System.out.println(counter+ "iterations in SA took "+ diff + " seconds.");
-		try {
-			FileOperations.writeToFile(penaltyAtEachTemperature);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			FileOperations.writeToFile(penaltyAtEachTemperature);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 	
 		updateBestIndiv();
 		
-		System.out.println("SA Best Individual penalty:  "+ this.bestIndiv.totalPenalty);
+//		System.out.println("SA Best Individual penalty:  "+ this.bestIndiv.totalPenalty);
 		if (this.bestIndiv.totalPenalty < this.currentInd.totalPenalty){
 			bestIndiv.createMatrix();
 			bestIndiv.createTimeCurMatrix();
 			this.bestIndiv.clone(this.currentInd); // Copy the fields of best to the current
 		} // end if
-		System.out.println("After SA Current Individual penalty:  "+ this.currentInd.totalPenalty);
+//		System.out.println("After SA Current Individual penalty:  "+ this.currentInd.totalPenalty);
 		this.pEvaluator.evaluateIndividual(currentInd);
+		
+		return this.currentInd;
 	}
 
 	private void copyCurrentToBest() {

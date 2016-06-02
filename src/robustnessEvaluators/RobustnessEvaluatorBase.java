@@ -5,9 +5,6 @@ import java.util.List;
 
 import constraints.ConstraintBase;
 import constraints.HardConstraint;
-import data.convertionManager;
-import data.dataHolder;
-import data.parameters;
 import ga.Individual;
 import ga.Population;
 import ga.PopulationParameters;
@@ -18,12 +15,11 @@ public abstract class RobustnessEvaluatorBase {
 	public List<HardConstraint> feasConstraints;
 	public List<ConstraintBase> optimalityConstraints;
 	public Individual currentIndividual;
-	float avgEventPenalty;
+	
 	
 	public RobustnessEvaluatorBase(RobustnessManager manager){
 		this.robManager= manager;
-//		this.bestMove= new newMove();
-		
+ 
 		this.feasConstraints= new ArrayList<HardConstraint>();
 		for (ConstraintBase con: manager.constraints)
 			if (con instanceof HardConstraint){
@@ -49,84 +45,7 @@ public abstract class RobustnessEvaluatorBase {
 	public abstract void evaluateIndividualPartialUpdateMatrix(Individual ind, int ev1, int time2, int room2, int ev2, int time1,
 			int room1) ;
 
-
-	// returns 1 only if one event can be moved to an empty position with feasibility preserved
-	public double tryCurrentMoveFeasibility(int ev1, int time2, int room2, int ev2, int time1, int room1) { // ev1 should be evaluated for: time2, room2!
-		double counter= 0;
-		if (ev1== parameters.UNUSED_EVENT && ev2== parameters.UNUSED_EVENT)
-			return counter;
-		if (ev2!= parameters.UNUSED_EVENT)
-			return counter;
-
-		// update matrix:
-		this.currentIndividual.dataMatrix[room2][time2]= ev1;
-		this.currentIndividual.dataMatrix[room1][time1]= ev2;
-		
-		int ev1OrigVal, ev2OrigVal;
-		// Now try the current move:
-		if (ev1== parameters.UNUSED_EVENT){
-			ev2OrigVal= this.currentIndividual.Data[ev2];
-			this.currentIndividual.Data[ev2]= convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev2], 1, time1, room1);
-			if (checkFeas(this.currentIndividual.Data, ev1, time2, room2)){ 
-				counter= 1;
-			} // end if checkFeas
-			// data to original values:
-			this.currentIndividual.Data[ev2] = ev2OrigVal; // To original values
-			// matrix to original values:
-			this.currentIndividual.dataMatrix[room2][time2]= ev2;
-			this.currentIndividual.dataMatrix[room1][time1]= ev1;
-			
-			return counter;
-		} // end if
-		
-		if (ev2== parameters.UNUSED_EVENT){
-			ev1OrigVal= this.currentIndividual.Data[ev1];
-			this.currentIndividual.Data[ev1] = convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev1], 1, time2, room2);
-			if (checkFeas(this.currentIndividual.Data, ev1, time2, room2)){
-				counter= 1;
-			} // end if
-			// data to original values:
-			this.currentIndividual.Data[ev1] = ev1OrigVal; // To original values
-			// matrix to original values:
-			this.currentIndividual.dataMatrix[room2][time2]= ev2;
-			this.currentIndividual.dataMatrix[room1][time1]= ev1;
-			
-			return counter;
-		} // end if
-		
-		if (ev2!= parameters.UNUSED_EVENT && ev1!= parameters.UNUSED_EVENT){
-			ev2OrigVal= this.currentIndividual.Data[ev2];
-			ev1OrigVal= this.currentIndividual.Data[ev1];
-			this.currentIndividual.Data[ev1] = convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev1], 1, time2, room2);
-			this.currentIndividual.Data[ev2]= convertionManager.eventValuesToInt(dataHolder.eventCourseId[ev2], 1, time1, room1);
-			if (checkFeas(this.currentIndividual.Data, ev1, time2, room2)){
-				counter= 1;
-			}
-			// data to original values:
-			this.currentIndividual.Data[ev1] = ev1OrigVal; // To original values
-			this.currentIndividual.Data[ev2] = ev2OrigVal;	// To original values		
-			// matrix to original values:
-			this.currentIndividual.dataMatrix[room2][time2]= ev2;
-			this.currentIndividual.dataMatrix[room1][time1]= ev1;
-			
-			return counter;
-		} // end else if
-
-		return counter;
-	} // end method tryCurrentMoveFeasibility
-	
-	
-	public boolean checkFeas(int[] data, int event, int time, int room) {
-		for (HardConstraint hc: this.feasConstraints){
-			if (!hc.checkEventFeasibilityInSA(this.currentIndividual, event, time, room))
-				return false;
-		}
-		return true;
-		
-	}
-	
-	
-
+	public abstract double tryCurrentMove(int ev1, int time2, int room2, int ev2, int time1, int room1);
 	
 	
 	

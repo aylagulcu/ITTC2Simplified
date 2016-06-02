@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GlobalVars {
-
+	public static int runCount;
+	
+	public static List<String> runDetails= new ArrayList<String>(); // Penalty value of each individual
+	
+	
 	public static List<int[]> popPenaltyStats= new ArrayList<int[]>(); // Best P+ Avg P + Worst P
 	public static List<int[]> popPenaltyValues= new ArrayList<int[]>(); // Penalty value of each individual
 	
@@ -20,9 +24,12 @@ public class GlobalVars {
 	public static List<double[]> popRobustnessValues= new ArrayList<double[]>(); // Robustness value of each individual
 	public static List<double[]> popSecondRobustnessValues= new ArrayList<double[]>(); 
 	
-	//public static List<float[]> LSStats;
+	public static double initialPopAvgEventP;
 	
 	public static void initialize(){
+
+		// runDetails= new ArrayList<String>();
+		
 		popPenaltyStats= new ArrayList<int[]>(); // Best P+ Avg P + Worst P
 		popPenaltyValues= new ArrayList<int[]>(); // Penalty value of each individual
 		
@@ -35,6 +42,8 @@ public class GlobalVars {
 		popRobustnessStats= new ArrayList<Double>(); // Best R
 		popRobustnessValues= new ArrayList<double[]>(); // Robustness value of each individual
 		popSecondRobustnessValues= new ArrayList<double[]>(); 
+		
+		initialPopAvgEventP= 0;
 
 	}
 }

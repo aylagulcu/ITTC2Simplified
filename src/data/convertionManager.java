@@ -8,6 +8,7 @@ public class convertionManager {
 	// 12 bits: course id + (now for distinct lectures)
 	// 4 bits:lectures + 8 bits: time slot start + 8 bits: room
 	
+	@SuppressWarnings("unused")
 	public static int eventValuesToInt(int courseId, int hours, int time, int room) {
 		boolean[] temp= new boolean[32]; 
 		
@@ -47,6 +48,7 @@ public class convertionManager {
 		return wholeNumber;
 	}
 	
+	@SuppressWarnings("unused")
 	public static int eventToInt(int courseId, Event event) {
 		boolean[] temp= new boolean[32]; 
 		for (boolean b: temp) 

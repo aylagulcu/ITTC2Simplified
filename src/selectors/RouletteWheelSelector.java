@@ -81,4 +81,10 @@ public class RouletteWheelSelector extends SelectorBase {
 			} // end j for
 		
 	}
+
+	@Override
+	public int[] selectIndividualIndices(Population population) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -3,8 +3,6 @@ package ga;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 import constraints.ClashConstraint;
 import constraints.CompletenessConstraint;
 import constraints.ConstraintBase;
@@ -18,7 +16,7 @@ import constraints.RoomUniquenessConstraint;
 
 public class GAManager {
 
-	public void runGA() throws RowsExceededException, WriteException, InterruptedException, IOException {
+	public void runGA() throws InterruptedException, IOException {
 		ArrayList<ConstraintBase> listOfConst1 = loadList1(); 
 
 		GABase GA = new Deme(listOfConst1);

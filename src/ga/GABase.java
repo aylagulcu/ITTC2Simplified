@@ -14,8 +14,6 @@ import constraints.*;
 
 import java.io.IOException;
 
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 import mutators.MutationManager;
 import robustnessEvaluators.RobustnessManager;
 import selectors.SelectorBase;
@@ -45,22 +43,14 @@ public abstract class GABase {
 	protected Individual bestPindSoFar;
 	protected Individual bestRindSoFar;
 		
-//	public boolean bestUpdated= false;
-
-	public abstract void run() throws IOException, InterruptedException, RowsExceededException, WriteException;
+	public abstract void run() throws IOException;
 	
 	protected void updatePopulationStats(Population pop) {
 		// Attention: It is assumed that the Penalty and the Robustness values are up to date
 		updatePopulationFitnessStats(pop); // population best - avg - worst is found
 		updatePopulationRobustnessStats(pop); // population best - worst is found
-		
-		// Population Fitness and Robustness values should be up to date
-		// to correctly compute the following:
-		this.rankEvaluator.Evaluate(pop);
-		// Crowding distance should be evaluated after rank evaluation! 
-		this.crowdEvaluator.Evaluate(pop);
-		
-		this.divManager.evaluatePopDiversity(pop);	
+
+//		this.divManager.evaluatePopDiversity(pop);	
 	}
 
 	protected void evaluatePopulation(Population pop) {
@@ -70,6 +60,7 @@ public abstract class GABase {
 	}
 	
 	protected Population mergePopulations(Population oldPop, Population newPop) {
+		
 		// Assumption: individuals' Penalty & Robustness values should be up to date (both in oldPop and newPop)
 		int size= oldPop.individuals.length + newPop.individuals.length;
 		Population mergedPop= new Population(size);
@@ -81,6 +72,13 @@ public abstract class GABase {
 		rankEvaluator.Evaluate(mergedPop); // assigns each individual a rank.
 		crowdEvaluator.Evaluate(mergedPop); // assigns each individual a crowding distance.
 		
+		// What if the improvedPop cannot be filled if duplicated are removed?
+		// This situation will be avoided by using the following at the end of for loop below:
+		int worstRank= mergedPop.individuals[0].rank;
+		for (Individual in: mergedPop.individuals)
+			if (in.rank > worstRank) worstRank= in.rank;
+		
+		
 		// sort individuals first acc to their ranks, and then acc to their crowd distance values:
 		// sort individuals in the first pareto front acc to distance
 		int improvedPopSize= newPop.individuals.length;
@@ -89,11 +87,103 @@ public abstract class GABase {
 		ArrayList<Individual> frontIndividuals= new ArrayList<Individual>();
 		int rankIndiv= 1;
 		int index= 0;
+		double genotypicDistance= 0;
 		while (index< improvedPopSize){
 			frontIndividuals.clear();
 			for (int i= 0; i< size; i++){
-				if (mergedPop.individuals[i].rank== rankIndiv)
+				if (mergedPop.individuals[i].rank== rankIndiv){
+					// if the distance of this individual and any other front indiv is > 0:
+					for (Individual ind: frontIndividuals){
+						genotypicDistance= this.divManager.diffTwoIndividuals(ind, mergedPop.individuals[i]);
+						if (genotypicDistance== 0) break;
+					} // end for
+					if (frontIndividuals.size() > 0 && genotypicDistance== 0)
+						continue; // do not add mergedPop.individuals[i] to the front
 					frontIndividuals.add(mergedPop.individuals[i]);
+				} // end if
+			} // end i for
+			
+			// sort the individuals in this rank acc to their distance values only if
+			// there is not enough room to accomodate all of them
+			if (index + frontIndividuals.size()<= improvedPopSize){ 
+				for (Individual ind: frontIndividuals){
+					improvedPop.individuals[index]= ind;
+					index+= 1;
+				} // end for
+			} // end if
+			else{
+				int bestInd= 0;
+				while (index< improvedPopSize){
+					bestInd= 0;
+					for (int i= 1; i< frontIndividuals.size(); i++){
+						if (frontIndividuals.get(i).crowdDistance > frontIndividuals.get(bestInd).crowdDistance)
+							bestInd= i;
+					} // end i for
+					
+					improvedPop.individuals[index]= frontIndividuals.get(bestInd);
+					index+= 1;
+					frontIndividuals.remove(bestInd);
+				}; // end while
+			} // end else
+
+			rankIndiv +=1;
+			
+			// if all rank indivs has been evaluated, but still new pop was no full:
+			if (rankIndiv > worstRank && index< improvedPopSize){
+			
+				
+			}
+			
+		}; // end while
+		
+//		System.out.println();
+//		System.out.println("********************************************");
+//		
+//		System.out.println("improvedPop:");
+//		System.out.println("Individual"+"\t"+"Rank"+"\t"+"CrowdDistance"+"\t"+"Penalty"+"\t"+"Robustness");
+//		for (int i=0; i< improvedPop.individuals.length; i++)
+//			System.out.println(i+"\t"+improvedPop.individuals[i].rank+"\t"+improvedPop.individuals[i].crowdDistance+"\t"+improvedPop.individuals[i].totalPenalty+"\t"+improvedPop.individuals[i].robustValueMin);
+		
+		return improvedPop;
+	}
+
+
+	protected Population mergePopulations(Population pop, Individual indAfterSA) {
+		// Assumption: individuals' Penalty & Robustness values should be up to date (both in pop and newPop)
+		int size= pop.individuals.length + 1;
+		Population mergedPop= new Population(size);
+		for (int i=0; i< pop.individuals.length; i++)
+			mergedPop.individuals[i]= pop.individuals[i].clone();
+		mergedPop.individuals[size-1]= indAfterSA.clone();
+		
+		rankEvaluator.Evaluate(mergedPop); // assigns each individual a rank.
+		crowdEvaluator.Evaluate(mergedPop); // assigns each individual a crowding distance.
+		
+		// sort individuals first acc to their ranks, and then acc to their crowd distance values:
+		// sort individuals in the first pareto front acc to distance
+		int improvedPopSize= pop.individuals.length;
+		Population improvedPop= new Population(improvedPopSize);
+		
+		ArrayList<Individual> frontIndividuals= new ArrayList<Individual>();
+		int rankIndiv= 1;
+		int index= 0;
+		double genotypicDistance= 0;
+		while (index< improvedPopSize){
+			frontIndividuals.clear();
+			for (int i= 0; i< size; i++){
+				if (mergedPop.individuals[i].rank== rankIndiv){
+					
+					// if the distance of this individual and any other front indiv is > 0:
+					for (Individual ind: frontIndividuals){
+						genotypicDistance= this.divManager.diffTwoIndividuals(ind, mergedPop.individuals[i]);
+						if (genotypicDistance== 0) break;
+					} // end for
+					if (frontIndividuals.size() > 0 && genotypicDistance== 0)
+						continue; // do not add mergedPop.individuals[i] to the front
+
+					frontIndividuals.add(mergedPop.individuals[i]);
+				} // end if
+	
 			} // end i for
 			// sort the individuals in this rank acc to their distance values only if
 			// there is not enough room to accomodate all of them
@@ -111,6 +201,7 @@ public abstract class GABase {
 						if (frontIndividuals.get(i).crowdDistance > frontIndividuals.get(bestInd).crowdDistance)
 							bestInd= i;
 					} // end i for
+					
 					improvedPop.individuals[index]= frontIndividuals.get(bestInd);
 					index+= 1;
 					frontIndividuals.remove(bestInd);
@@ -132,6 +223,7 @@ public abstract class GABase {
 		return improvedPop;
 	}
 
+	
 
 	private void updatePopulationFitnessStats(Population pop2) {
 		pop2.bestPIndividual= getBestPIndividual(pop2);	
@@ -213,22 +305,24 @@ public abstract class GABase {
 			statsR[i]= pop2.individuals[i].robustValueMin;
 		GlobalVars.popRobustnessValues.add(statsR);
 		
-//		computeSecondRobustnessAndRecord(pop2);
-
 		GlobalVars.popAvgDiversity.add(pop2.avgDiff);
 	}
 	
-	private void computeSecondRobustnessAndRecord(Population pop2) {
-//		float[] statsRSecond= new float[pop2.individuals.length];
-//		float originalVal;
-//		for (int i=0; i< pop2.individuals.length; i++){
-//			originalVal= pop2.individuals[i].robustValueMin;
-//			secondRManager.evalIndivRobustness(pop2.individuals[i]);
-//			statsRSecond[i]= pop2.individuals[i].robustValueMin;
-//			pop2.individuals[i].robustValueMin= originalVal;
-//		} // end i for
-//
-//		GlobalVars.popSecondRobustnessValues.add(statsRSecond);
+
+	public void computeSecondRobustnessAndRecord(Population pop2) {
+		double[] statsRSecond= new double[pop2.individuals.length];
+		double originalVal;
+		
+		for (int i=0; i< pop2.individuals.length; i++){
+			originalVal= pop2.individuals[i].robustValueMin;
+			
+			secondRManager.evalIndivRobustness(pop2.individuals[i]);	
+
+			statsRSecond[i]= pop2.individuals[i].robustValueMin;
+			pop2.individuals[i].robustValueMin= originalVal;
+		} // end i for
+		
+		GlobalVars.popSecondRobustnessValues.add(statsRSecond);
 	}
 	
 	// Start time is sent as parameter; elapsed time is computed and sent back as the return value
@@ -237,12 +331,12 @@ public abstract class GABase {
 	}
 	
 	protected boolean isTerminate() {
-		if (PopulationParameters.currentIteration>= PopulationParameters.maxIteration)
+		if (PopulationParameters.currentIteration> PopulationParameters.maxIteration)
 			return true;
 		return false;
 	}
 
-	public Population generate(Population population) throws IOException, InterruptedException {
+	public Population generate(Population population)  {
 		// Evaluate individuals after this method
 		Population newPopulation = new Population(); // Individuals are automatically initialized!
 		int counter= 0; // Important!: Start this counter from 0 when elitizm is not applied
@@ -255,7 +349,7 @@ public abstract class GABase {
 			offSprings= this.cxManager.crossIndividuals(selectedIndivs[0], selectedIndivs[1], population.avgPValue);
 	
 			for (Individual child: offSprings){
-//				this.mutManager.mutateIndividual(child);
+				this.mutManager.mutateIndividual(child);
 				newPopulation.individuals[counter]= child;
 				counter++;
 				if (counter>= PopulationParameters.populationSize)
@@ -266,12 +360,12 @@ public abstract class GABase {
 		return newPopulation;
 	}
 	
-	protected void writeToFile() throws IOException, RowsExceededException, WriteException {
+	protected void writeToFile() throws IOException {
 		
 		util.FileOperations.writePopPenaltyStats(GlobalVars.popPenaltyStats); // At each iteration: best + avg + worst
-		util.FileOperations.writePopPenaltyValues(GlobalVars.popPenaltyValues);
+		util.FileOperations.writePopPenaltyValues(GlobalVars.popPenaltyValues); // At each iter: all individuals' p values
 		
-		util.FileOperations.writePopAvgDiversity(GlobalVars.popAvgDiversity);
+//		util.FileOperations.writePopAvgDiversity(GlobalVars.popAvgDiversity);
 	
 		util.FileOperations.writePopRobustnessStats(GlobalVars.popRobustnessStats);
 		util.FileOperations.writePopRobustnessValues(GlobalVars.popRobustnessValues);
@@ -280,84 +374,30 @@ public abstract class GABase {
 		
 		util.FileOperations.writeFinalPopToTxt(this.pop.individuals);
 		util.FileOperations.writeBestIndividualFoundToTxt(this.pop.bestPIndividual);
-		util.FileOperations.writeIndividualConstraintValuesToFile(this.pop.individuals);
 		
-		util.FileOperations.writeDiversityRelationToFile(this.pop.indIndDiff);
+//		util.FileOperations.writeDiversityRelationToFile(this.pop.indIndDiff);
+		
 		
 		util.FileOperations.printFinalSolutionToText(this.pop.bestPIndividual); // Best solution for online check
-		util.FileOperations.printFinalSolutionToSheet(this.pop.bestPIndividual); // Best solution for online check
+		//		util.FileOperations.printFinalSolutionToSheet(this.pop.bestPIndividual); // Best solution for online check
 		
 		util.FileOperations.printParetoToFile(this.pop);
 		
 		//util.FileOperations.printVNSInfoToFile(GlobalVars.LSStats);
+		
+		util.FileOperations.writeRunDetails(GlobalVars.runDetails);
 	}
 	
 
 
 	
-	
-	
-	
-	
-	
-	
+
 	
 	
 	
 	
 	
 
-
-	
-//	public List<Individual> selectIndividualsToVNS(Population currentPop) {
-//		List<Individual> indivs= new ArrayList<Individual>();
-//		
-//		List<Integer> temp= new ArrayList<Integer>();
-//		for (int i=0; i< currentPop.individuals.length; i++)
-//			temp.add(i);
-//		
-//		int bestIndiv; int bestIndivP;
-//		
-//		for (int constrCounter=0; constrCounter< constraints.size(); constrCounter++) {
-//			bestIndiv= temp.get(0); bestIndivP= currentPop.individuals[bestIndiv].constraintPenalties[constrCounter];
-//			// Find the best individual in terms of this constraint:
-//			for ( int index=1; index< temp.size(); index++) {
-//				if (currentPop.individuals[index].constraintPenalties[constrCounter] < bestIndivP){
-//					bestIndiv= index;
-//					bestIndivP= currentPop.individuals[bestIndiv].constraintPenalties[constrCounter];
-//				} // end if
-//			} // end ind for
-//			
-//			indivs.add(currentPop.individuals[bestIndiv]);
-//			temp.remove((Integer)bestIndiv); // should not be selected again!
-//		} // end constraints for
-//		
-//		indivs.add(this.pop.individuals[this.pop.bestIndIndex]);
-//		return indivs;
-//	}
-	
-//	public List<Individual> selectRandomIndividualsToVNS(Population currentPop) {
-//		Random rand= new Random(RandomNumberGenerator.getNewSeed());
-//		
-//		List<Individual> indivs= new ArrayList<Individual>();
-//		
-//		List<Integer> temp= new ArrayList<Integer>();
-//		for (int i=0; i< currentPop.individuals.length; i++)
-//			temp.add(i);
-//		int selected;
-//		for (int constrCounter=0; constrCounter< constraints.size(); constrCounter++) {
-//			selected= temp.get(rand.nextInt(temp.size()));
-//			temp.remove((Integer)selected); // should not be selected again!	
-//			indivs.add(currentPop.individuals[selected]);
-//		} // end constraints for
-//		
-//		indivs.add(this.pop.bestIndividual);
-//		return indivs;
-//	}
-	
-
-	
-	
 	
 ////	Multi-thread:
 //	public Population generateMulti(Population population) throws IOException, InterruptedException {

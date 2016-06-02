@@ -37,7 +37,13 @@ public abstract class SABase {
 		this.VNSList= new ArrayList<SearcherBase>();
 	}
 	
-	public abstract void applySA(Individual indiv);
+	public Individual applySA(Individual indiv){
+		return indiv;
+	}
+	
+	public void applySAMicro(Individual indiv){
+		
+	}
 	
 	public abstract boolean acceptCurrentMove(int ev1, int time2, int room2, int ev2, int time1, int room1);
 	public abstract void updateOriginalValue();
@@ -45,15 +51,20 @@ public abstract class SABase {
 	public abstract void computeNewPartialValues(int ev1, int time2, int room2, int ev2, int time1, int room1);
 	
 	public SearcherBase selectSearcher(){	
-		// Select one randomly, independent of the previous one:
-		double moverate=0.57;
-		double r= this.myRandom.nextDouble();
-		if (r<= moverate){
-			return this.VNSList.get(0); // return move
-		}
-		else{
-			return this.VNSList.get(1); // return swap
-		} // end else
+//		// Select one randomly, independent of the previous one:
+//		double moverate=0.57;
+//		double r= this.myRandom.nextDouble();
+//		if (r<= moverate){
+//			return this.VNSList.get(0); // return move
+//		}
+//		else{
+//			return this.VNSList.get(1); // return swap
+//		} // end else
+//		
+		return this.VNSList.get(2);
+		
+		
+		
 	}
 
 }

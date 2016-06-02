@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import crosser.crosserBase;
-
 import initializer.CP.CPIndInitializer;
 import data.parameters;
 

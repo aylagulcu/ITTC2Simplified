@@ -86,15 +86,21 @@ public class RWDiverseSelector extends SelectorBase {
 			maxInd= 1;
 		else
 			maxInd= 0;
-		
-		for(int i=0; i< pop.individuals.length; i++){
-			if(i== ind1)
-				continue;
-			if (pop.indIndTotalDifferences[ind1][i] > pop.indIndTotalDifferences[ind1][maxInd])
-				maxInd= i;			
-		} // end i for
+//		
+//		for(int i=0; i< pop.individuals.length; i++){
+//			if(i== ind1)
+//				continue;
+//			if (pop.indIndTotalDifferences[ind1][i] > pop.indIndTotalDifferences[ind1][maxInd])
+//				maxInd= i;			
+//		} // end i for
 		
 		return maxInd;
+	}
+
+	@Override
+	public int[] selectIndividualIndices(Population population) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

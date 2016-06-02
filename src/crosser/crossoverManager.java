@@ -27,6 +27,7 @@ public class crossoverManager {
 	public MicroSAforRobustness MicroSAR;
 	
 	// 2: after only time X, 2: time then room, 2: after only room, 2: after room then time
+	
 	public Individual[] offSprings= new Individual[2]; 
 
 	public List<ConstraintBase> constraints;
@@ -45,7 +46,6 @@ public class crossoverManager {
 		for (ConstraintBase con: this.constraints)
 			if (con instanceof HardConstraint)
 				feasConstraints.add((HardConstraint) con);	
-		
 		myCrosser=  new TimeBasedCX(this); 
 		MicroSAP= new MicroSAforP(this.constraints);
 		MicroSAR= new MicroSAforRobustness(this.constraints); 
@@ -66,12 +66,13 @@ public class crossoverManager {
 		if (rnd < PopulationParameters.crossoverRate){			
 			offSprings= myCrosser.cross(ind1, ind2);
 			
-//			this.mySimpleEvaluator.evaluateIndividual(temp[0]);
-//			this.mySimpleEvaluator.evaluateIndividual(temp[1]);
+			applyMicroSA(offSprings[0]);
+			applyMicroSAForSecond(offSprings[1]);
 			
 			return offSprings;
 		}
 		else{
+
 			offSprings[0]= ind1;
 			offSprings[1]= ind2;
 		}
@@ -80,11 +81,8 @@ public class crossoverManager {
 
 	
 	public void applyMicroSA(Individual child) {
+		// After CX, penalty and robustness are already up to date!
 
-		// After CX, evaluation is required:
-		this.pEvaluator.evaluateIndividual(child);
-		this.rm.evalIndivRobustness(child);
-		
 		// if rand < 0.5 then apply penalty improvement
 		if (myRandom.nextDouble()<0.5){	
 			this.MicroSAP.applySA(child);
@@ -97,10 +95,8 @@ public class crossoverManager {
 	}
 	
 	public void applyMicroSAForSecond(Individual child) {
-		// After CX, evaluation is required:
-		this.pEvaluator.evaluateIndividual(child);
-		this.rm.evalIndivRobustness(child);
-		
+		// After CX, penalty and robustness are already up to date!
+
 		if (sap){
 			this.MicroSAP.applySA(child);
 		}

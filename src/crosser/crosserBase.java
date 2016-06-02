@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import constraints.HardConstraint;
 import data.convertionManager;
 import data.dataHolder;
 import data.parameters;

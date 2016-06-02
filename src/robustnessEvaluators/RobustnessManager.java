@@ -13,8 +13,8 @@ public class RobustnessManager {
 	
 	public RobustnessManager(List<ConstraintBase> constr) {
 		this.constraints=constr;	
-//		this.robMeasure= new DisruptEventSC(this); // Our Real measure
-		this.robMeasure= new EventBasedR5Move(this);
+		this.robMeasure= new DisruptEventSC(this); // Our Real measure
+//		this.robMeasure= new EventBasedR5Move(this);
 	}
 	
 	public void setRobustnessMeasure(RobustnessEvaluatorBase rMeasure){
@@ -38,5 +38,4 @@ public class RobustnessManager {
 	}
 
 
-	
 }

@@ -1,23 +1,20 @@
 package mutators;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import constraints.ClashConstraint;
-import constraints.CompletenessConstraint;
 import constraints.ConstraintBase;
 import constraints.HardConstraint;
 import constraints.InstructorTimeAvailabilityConstraint;
-import constraints.RoomUniquenessConstraint;
 import data.parameters;
 import util.RandomNumberGenerator;
 import evaluators.EvaluatorBase;
 import evaluators.PenaltyEvaluator;
-import ga.GlobalVars;
 import ga.Individual;
 import ga.PopulationParameters;
+import robustnessEvaluators.RobustnessManager;
 
 public class MutationManager {
 	
@@ -25,7 +22,10 @@ public class MutationManager {
 	public List<HardConstraint> feasConstraints;
 	public mutatorBase myMutator;
 	public Individual indToMutate;
-	public EvaluatorBase mySimpleEvaluator;
+	
+	protected RobustnessManager rm;
+	protected EvaluatorBase pEvaluator;
+	
 	public Random myRandGen;
 	float prob;
 	int numEvents= (int)(parameters.numEvents * PopulationParameters.eventMutRate);
@@ -35,15 +35,18 @@ public class MutationManager {
 		this.constraints=constr;
 		feasConstraints= new ArrayList<HardConstraint>();
 		feasConstraints.add(new InstructorTimeAvailabilityConstraint(100));
+		feasConstraints.add(new ClashConstraint(100));
 
-		this.mySimpleEvaluator= new PenaltyEvaluator(this.constraints);
+		this.pEvaluator= new PenaltyEvaluator(this.constraints);
+		this.rm= new RobustnessManager(this.constraints);
+		
 		myRandGen= new Random(RandomNumberGenerator.getNewSeed());
 		
 		myMutator= new MoveSwapMutator(this);
 	}
 
 
-	public void mutateIndividual(Individual indiv) throws IOException{
+	public void mutateIndividual(Individual indiv) {
 		
 		prob= RandomNumberGenerator.getRandomFloat(); // [0,1)
 		if (prob > PopulationParameters.mutationRate){
@@ -52,16 +55,10 @@ public class MutationManager {
 		else{
 			this.indToMutate= indiv;
 			myMutator.mutate();
-			mySimpleEvaluator.evaluateIndividual(indToMutate);
-		} // end else
-		
-//		if (GlobalVars.iterCounterWithNoPenaltyImprovement > 50){
-//			this.indToMutate= indiv;
-//			myMutator.mutate();
-//			mySimpleEvaluator.evaluateIndividual(indToMutate);
-//		}
-
-		
+			
+			pEvaluator.evaluateIndividual(indToMutate);
+			rm.evalIndivRobustness(indToMutate);
+		} // end else		
 	}
 	
 }

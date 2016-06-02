@@ -38,7 +38,7 @@ public abstract class SearcherBase {
 		
 		mySA.updateOriginalValue();
 		mySA.computeOriginalPartialValues(ev1, time2, room2, ev2, time1, room1);
-		
+
 		// update matrix:
 		mySA.currentInd.dataMatrix[room2][time2]= ev1;
 		mySA.currentInd.dataMatrix[room1][time1]= ev2;

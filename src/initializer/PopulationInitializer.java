@@ -1,18 +1,11 @@
 
 package initializer;
 
-import orderingMethods.orderingManager;
-
 import ga.Individual;
 import ga.Population;
 import ga.PopulationParameters;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
-
-import data.parameters;
 
 public class PopulationInitializer implements iPopulationInitializer {
 
@@ -29,25 +22,25 @@ public class PopulationInitializer implements iPopulationInitializer {
 	} // end method
 	
 	private void initializeIndividual(Individual ind, Random threadRandom){	
-		
-		CourseInitializer courseInitializer= new CourseInitializer(); // FOR MULTIPLE THREADS!
-		tournamentManager tManager= new tournamentManager();
-		orderingManager oManager= new orderingManager();
-		
-		List<Integer> crsToInitialize= new ArrayList<Integer>();
-		for (int c=0; c< parameters.numCourses; c++)
-			crsToInitialize.add(c, c);
-		List<Integer> tournamentCourses= new ArrayList<Integer>();
-		int courseId;
-		while (crsToInitialize.size()>0){ // While there are still courses to initialize
-			tournamentCourses.clear();
-			tournamentCourses= tManager.createTournamentCourses(crsToInitialize, threadRandom); // creates a tournament of courses
-			courseId= oManager.selectOrdering(ind, tournamentCourses, threadRandom).selectCourse();
-			crsToInitialize.remove((Object)courseId);
-			boolean result= courseInitializer.initializeCourse(ind, courseId, threadRandom);
-			if (result==false)
-				System.out.println("There is a serious error during the initialization of a new course!!!");
-		} // end while
+//		
+//		CourseInitializer courseInitializer= new CourseInitializer(); // FOR MULTIPLE THREADS!
+//		tournamentManager tManager= new tournamentManager();
+//		orderingManager oManager= new orderingManager();
+//		
+//		List<Integer> crsToInitialize= new ArrayList<Integer>();
+//		for (int c=0; c< parameters.numCourses; c++)
+//			crsToInitialize.add(c, c);
+//		List<Integer> tournamentCourses= new ArrayList<Integer>();
+//		int courseId;
+//		while (crsToInitialize.size()>0){ // While there are still courses to initialize
+//			tournamentCourses.clear();
+//			tournamentCourses= tManager.createTournamentCourses(crsToInitialize, threadRandom); // creates a tournament of courses
+//			courseId= oManager.selectOrdering(ind, tournamentCourses, threadRandom).selectCourse();
+//			crsToInitialize.remove((Object)courseId);
+//			boolean result= courseInitializer.initializeCourse(ind, courseId, threadRandom);
+//			if (result==false)
+//				System.out.println("There is a serious error during the initialization of a new course!!!");
+//		} // end while
 	}
 		
 	

@@ -26,9 +26,12 @@ public class orderingManager {
 	}
 	
 	// returns new ordering method
+
 	public OrderingBase selectOrdering(){
 		int strategyNo= this.myRand.nextInt(this.orderings.size()); // upper bound is excluded!
 //		int strategyNo= this.myRand.nextInt(3); // 0-1-2 is selected randomly
-		return this.orderings.get(2);
+		
+		return this.orderings.get(strategyNo);
+//		return this.orderings.get(2);
 	}
 }

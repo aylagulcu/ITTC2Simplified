@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import crosser.crosserBase;
-
 import data.dataHolder;
 
 public class LargestDegree extends OrderingBase  {

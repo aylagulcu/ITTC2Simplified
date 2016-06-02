@@ -66,4 +66,36 @@ public class PositionBased extends DiversityEvaluatorBase {
 		return totalDistance;
 	} // end method
 	
+	
+	/// Returns the absolute difference between two individuals:
+	public double computeBetweenTwo(Individual ind1, Individual ind2) { 
+		double totalDistance= 0;
+		double distance= 0;
+
+		// contribution of a course is between zero and one!
+		// 1, A and B has nothing in common; 0, if A is identical to B.
+
+		Course course1; Course course2;
+		List<Integer> temp1= new ArrayList<Integer>();
+		List<Integer> temp2= new ArrayList<Integer>();
+		Set<Integer> intersection= new HashSet<Integer>(); 
+		
+		for (int crs=0; crs < parameters.numCourses; crs++){
+			intersection.clear();
+			course1= convertionManager.getCourseFromArray(crs, ind1.Data);
+			course2= convertionManager.getCourseFromArray(crs, ind2.Data);
+			temp1.clear();
+			temp2.clear();
+			for (int e=0; e< dataHolder.numLectures[crs]; e++){
+				temp1.add(course1.myEvents.get(e).time);
+				temp2.add(course2.myEvents.get(e).time);
+			} // end e for
+			intersection.addAll(temp1); 
+			intersection.retainAll(temp2);
+			distance= 1- ((double)intersection.size() / course1.myEvents.size());
+			assert distance<=1;
+			totalDistance+= distance;	
+		} // end crs for
+		return totalDistance;
+	} // end method
 }
